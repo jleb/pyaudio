@@ -60,7 +60,8 @@ Microsoft Windows
 
 If you are targeting native Win32 Python, you will need either
 Microsoft Visual Studio or MinGW (via Cygwin). Here are compilation
-hints for using MinGW under the Cygwin build environment.
+hints for using MinGW under the Cygwin build environment. Be sure to
+read the special note for Cygwin above.
 
 Note: I've only tested this under Cygwin's build environment. Your
 mileage may vary in other environments (i.e., compiling PortAudio with

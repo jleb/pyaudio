@@ -1,5 +1,5 @@
 """
-pyAudio : Python Bindings for PortAudio.
+pyAudio v0.1.0: Python Bindings for PortAudio.
 
 Copyright (c) 2006 Hubert Pham
 

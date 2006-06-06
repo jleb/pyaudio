@@ -1,0 +1,642 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>pyaudio.PyAudio</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="pyaudio-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          PyAudio
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        <a href="pyaudio-module.html">Module&nbsp;pyaudio</a> ::
+        Class&nbsp;PyAudio
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[show&nbsp;private&nbsp;|&nbsp;<a href="../public/pyaudio.PyAudio-class.html">hide&nbsp;private</a>]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="pyaudio.PyAudio-class.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF CLASS DESCRIPTION =========== -->
+<h2 class="class">Class PyAudio</h2>
+
+<hr/>
+
+<dl class="docutils">
+<dt>Python interface to PortAudio. Provides methods to:</dt>
+<dd><ul class="first last rst-simple">
+<li>initialize and terminate PortAudio</li>
+<li>open and close streams</li>
+<li>query and inspect the available PortAudio Host APIs</li>
+<li>query and inspect the available PortAudio audio
+devices</li>
+</ul>
+</dd>
+</dl>
+<p>Use this class to open and close streams.</p>
+<hr/>
+
+
+<!-- =========== START OF METHOD SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Method Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#__init__" class="summary-sig-name"><code>__init__</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Initialize PortAudio.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#terminate" class="summary-sig-name"><code>terminate</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Terminate PortAudio.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>dict</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="../private/pyaudio.PyAudio-class.html#_make_device_info_dictionary" class="summary-sig-name"><code>_make_device_info_dictionary</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>index</span>,
+          <span class=summary-sig-arg>device_info</span>)</span></code>
+<br />
+Internal method to create Device Info dictionary
+that mirrors PortAudio's <tt class="docutils literal"><span class="pre">PaDeviceInfo</span></tt> structure.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>dict</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="../private/pyaudio.PyAudio-class.html#_make_host_api_dictionary" class="summary-sig-name"><code>_make_host_api_dictionary</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>index</span>,
+          <span class=summary-sig-arg>host_api_struct</span>)</span></code>
+<br />
+Internal method to create Host API dictionary
+that mirrors PortAudio's <tt class="docutils literal"><span class="pre">PaHostApiInfo</span></tt> structure.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/pyaudio.PyAudio-class.html#_remove_stream" class="summary-sig-name"><code>_remove_stream</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>stream</span>)</span></code>
+<br />
+Internal method.</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Stream Management</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#open" class="summary-sig-name"><code>open</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+Open a new stream.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#close" class="summary-sig-name"><code>close</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>stream</span>)</span></code>
+<br />
+Close a stream.</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Host API</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>int</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_host_api_count" class="summary-sig-name"><code>get_host_api_count</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Return the number of PortAudio Host APIs.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>dict</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_default_host_api_info" class="summary-sig-name"><code>get_default_host_api_info</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Return a dictionary containing the default Host API
+parameters.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>dict</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_host_api_info_by_type" class="summary-sig-name"><code>get_host_api_info_by_type</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>host_api_type</span>)</span></code>
+<br />
+Return a dictionary containing the Host API parameters for the
+host API specified by the <a href="pyaudio.PyAudio-class.html#get_host_api_info_by_type" class="link"><code>host_api_type</code></a>.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>dict</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_host_api_info_by_index" class="summary-sig-name"><code>get_host_api_info_by_index</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>host_api_index</span>)</span></code>
+<br />
+Return a dictionary containing the Host API parameters for the
+host API specified by the <a href="pyaudio.PyAudio-class.html#get_host_api_info_by_index" class="link"><code>host_api_index</code></a>.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>dict</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_device_info_by_host_api_device_index" class="summary-sig-name"><code>get_device_info_by_host_api_device_index</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>host_api_index</span>,
+          <span class=summary-sig-arg>host_api_device_index</span>)</span></code>
+<br />
+Return a dictionary containing the Device parameters for a
+given Host API's n'th device.</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Device API</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>int</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_device_count" class="summary-sig-name"><code>get_device_count</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Return the number of PortAudio Host APIs.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>bool</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#is_format_supported" class="summary-sig-name"><code>is_format_supported</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>rate</span>,
+          <span class=summary-sig-arg>input_device</span>,
+          <span class=summary-sig-arg>input_channels</span>,
+          <span class=summary-sig-arg>input_format</span>,
+          <span class=summary-sig-arg>output_device</span>,
+          <span class=summary-sig-arg>output_channels</span>,
+          <span class=summary-sig-arg>output_format</span>)</span></code>
+<br />
+Check to see if specified device configuration
+is supported.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>dict</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_default_input_device_info" class="summary-sig-name"><code>get_default_input_device_info</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Return the default input Device parameters as a
+dictionary.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>dict</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_default_output_device_info" class="summary-sig-name"><code>get_default_output_device_info</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Return the default output Device parameters as a
+dictionary.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>dict</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_device_info_by_index" class="summary-sig-name"><code>get_device_info_by_index</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>device_index</span>)</span></code>
+<br />
+Return the Device parameters for device specified in
+<a href="pyaudio.PyAudio-class.html#get_device_info_by_index" class="link"><code>device_index</code></a> as a dictionary.</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Stream Format Conversion</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p>int</p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_sample_size" class="summary-sig-name"><code>get_sample_size</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>format</span>)</span></code>
+<br />
+Returns the size (in bytes) for the specified
+sample <a href="pyaudio.PyAudio-class.html#get_sample_size" class="link"><code>format</code></a> (a <a href="pyaudio-module.html#PaSampleFormat" class="link"><code>PaSampleFormat</code></a> constant).</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p><a href="pyaudio-module.html#PaSampleFormat" class="link"><code>PaSampleFormat</code></a></p>
+</font></td>
+  <td><code><span class="summary-sig"><a href="pyaudio.PyAudio-class.html#get_format_from_width" class="summary-sig-name"><code>get_format_from_width</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>width</span>,
+          <span class=summary-sig-arg>unsigned</span>)</span></code>
+<br />
+Returns a PortAudio format constant for
+the specified <a href="pyaudio.PyAudio-class.html#get_format_from_width" class="link"><code>width</code></a>.</td></tr>
+</table><br />
+
+
+<!-- =========== START OF METHOD DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Method Details</th></tr>
+</table>
+
+<a name="open"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">open</span>(<span class=sig-arg>self</span>,
+          <span class="sig-vararg">*args</span>,
+          <span class="sig-kwarg">**kwargs</span>)</span>
+  </h3>
+<p>Open a new stream. See constructor for
+<a href="pyaudio.Stream-class.html#__init__" class="link"><code>Stream.__init__</code></a> for parameter details.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p><a href="pyaudio.Stream-class.html" class="link"><code>Stream</code></a></p>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="close"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">close</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>stream</span>)</span>
+  </h3>
+<p>Close a stream. Typically use <a href="pyaudio.Stream-class.html#close" class="link"><code>Stream.close</code></a> instead.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>stream</b></code> -
+ <p>An instance of the <a href="pyaudio.Stream-class.html" class="link"><code>Stream</code></a> object.</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>ValueError</b></code> -
+<p>if stream does not exist.</p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_host_api_count"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_host_api_count</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+<p>Return the number of PortAudio Host APIs.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>int</p>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_default_host_api_info"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_default_host_api_info</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+<p>Return a dictionary containing the default Host API
+parameters. The keys of the dictionary mirror the data fields
+of PortAudio's <tt class="docutils literal"><span class="pre">PaHostApiInfo</span></tt> structure.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>dict</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>IOError</b></code> -
+<p>if no default input device available</p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_host_api_info_by_type"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_host_api_info_by_type</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>host_api_type</span>)</span>
+  </h3>
+<p>Return a dictionary containing the Host API parameters for the
+host API specified by the <a href="pyaudio.PyAudio-class.html#get_host_api_info_by_type" class="link"><code>host_api_type</code></a>. The keys of the
+dictionary mirror the data fields of PortAudio's <tt class="docutils literal"><span class="pre">PaHostApiInfo</span></tt>
+structure.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>host_api_type</b></code> -
+ <p>The desired Host API (<a href="pyaudio-module.html#PaHostApiTypeId" class="link"><code>PaHostApiTypeId</code></a> constant).</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>dict</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>IOError</b></code> -
+<p>for invalid <a href="pyaudio.PyAudio-class.html#get_host_api_info_by_type" class="link"><code>host_api_type</code></a></p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_host_api_info_by_index"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_host_api_info_by_index</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>host_api_index</span>)</span>
+  </h3>
+<p>Return a dictionary containing the Host API parameters for the
+host API specified by the <a href="pyaudio.PyAudio-class.html#get_host_api_info_by_index" class="link"><code>host_api_index</code></a>. The keys of the
+dictionary mirror the data fields of PortAudio's <tt class="docutils literal"><span class="pre">PaHostApiInfo</span></tt>
+structure.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>host_api_index</b></code> -
+ <p>The host api index.</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>dict</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>IOError</b></code> -
+<p>for invalid <a href="pyaudio.PyAudio-class.html#get_host_api_info_by_index" class="link"><code>host_api_index</code></a></p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_device_info_by_host_api_device_index"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_device_info_by_host_api_device_index</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>host_api_index</span>,
+          <span class=sig-arg>host_api_device_index</span>)</span>
+  </h3>
+<p>Return a dictionary containing the Device parameters for a
+given Host API's n'th device. The keys of the dictionary
+mirror the data fields of PortAudio's <tt class="docutils literal"><span class="pre">PaDeviceInfo</span></tt> structure.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>host_api_index</b></code> -
+ <p>The Host API index number.</p>
+      <dd><code><b>host_api_device_index</b></code> -
+ <p>The <em>n</em> 'th device of the host API.</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>dict</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>IOError</b></code> -
+<p>for invalid indices</p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_device_count"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_device_count</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+<p>Return the number of PortAudio Host APIs.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>int</p>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="is_format_supported"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">is_format_supported</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>rate</span>,
+          <span class=sig-arg>input_device</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>input_channels</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>input_format</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>output_device</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>output_channels</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>output_format</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+<p>Check to see if specified device configuration
+is supported.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>rate</b></code> -
+ <p>Specifies the desired rate (in Hz)</p>
+      <dd><code><b>input_device</b></code> -
+ <p>The input device index. Specify <code>None</code> (default) for
+half-duplex output-only streams.</p>
+      <dd><code><b>input_channels</b></code> -
+ <p>The desired number of input channels. Ignored if
+<a href="pyaudio.PyAudio-class.html#is_format_supported" class="link"><code>input_device</code></a> is not specified (or <code>None</code>).</p>
+      <dd><code><b>input_format</b></code> -
+ <p>PortAudio sample format constant defined
+in this module</p>
+      <dd><code><b>output_device</b></code> -
+ <p>The output device index. Specify <code>None</code> (default) for
+half-duplex input-only streams.</p>
+      <dd><code><b>output_channels</b></code> -
+ <p>The desired number of output channels. Ignored if
+<a href="pyaudio.PyAudio-class.html#is_format_supported" class="link"><code>input_device</code></a> is not specified (or <code>None</code>).</p>
+      <dd><code><b>output_format</b></code> -
+ <p>PortAudio sample format constant (<a href="pyaudio-module.html#PaSampleFormat" class="link"><code>PaSampleFormat</code></a>).</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>bool</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>ValueError</b></code> -
+<p>PortAudio error or invalid devices.</p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_default_input_device_info"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_default_input_device_info</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+<p>Return the default input Device parameters as a
+dictionary. The keys of the dictionary mirror the data fields
+of PortAudio's <tt class="docutils literal"><span class="pre">PaDeviceInfo</span></tt> structure.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>dict</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>IOError</b></code> -
+<p>No default input device available.</p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_default_output_device_info"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_default_output_device_info</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+<p>Return the default output Device parameters as a
+dictionary. The keys of the dictionary mirror the data fields
+of PortAudio's <tt class="docutils literal"><span class="pre">PaDeviceInfo</span></tt> structure.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>dict</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>IOError</b></code> -
+<p>No default output device available.</p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_device_info_by_index"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_device_info_by_index</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>device_index</span>)</span>
+  </h3>
+<p>Return the Device parameters for device specified in
+<a href="pyaudio.PyAudio-class.html#get_device_info_by_index" class="link"><code>device_index</code></a> as a dictionary. The keys of the dictionary
+mirror the data fields of PortAudio's <tt class="docutils literal"><span class="pre">PaDeviceInfo</span></tt>
+structure.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>device_index</b></code> -
+ <p>The device index.</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>dict</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>IOError</b></code> -
+<p>Invalid <a href="pyaudio.PyAudio-class.html#get_device_info_by_index" class="link"><code>device_index</code></a>.</p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_sample_size"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_sample_size</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>format</span>)</span>
+  </h3>
+<p>Returns the size (in bytes) for the specified
+sample <a href="pyaudio.PyAudio-class.html#get_sample_size" class="link"><code>format</code></a> (a <a href="pyaudio-module.html#PaSampleFormat" class="link"><code>PaSampleFormat</code></a> constant).</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>format</b></code> -
+ <p>Sample format constant (<a href="pyaudio-module.html#PaSampleFormat" class="link"><code>PaSampleFormat</code></a>).</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>int</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>ValueError</b></code> -
+<p>Invalid specified <a href="pyaudio.PyAudio-class.html#get_sample_size" class="link"><code>format</code></a>.</p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_format_from_width"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_format_from_width</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>width</span>,
+          <span class=sig-arg>unsigned</span>=<span class=sig-default>True</span>)</span>
+  </h3>
+<p>Returns a PortAudio format constant for
+the specified <a href="pyaudio.PyAudio-class.html#get_format_from_width" class="link"><code>width</code></a>.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>width</b></code> -
+ <p>The desired sample width in bytes (1, 2, 3, or 4)</p>
+      <dd><code><b>unsigned</b></code> -
+ <p>For 1 byte width, specifies signed or unsigned format.</p>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p><a href="pyaudio-module.html#PaSampleFormat" class="link"><code>PaSampleFormat</code></a></p>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>ValueError</b></code> -
+<p>for invalid <a href="pyaudio.PyAudio-class.html#get_format_from_width" class="link"><code>width</code></a></p>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="__init__"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">__init__</span>(<span class=sig-arg>self</span>)</span>
+    <br /><i>(Constructor)</i>
+  </h3>
+<p>Initialize PortAudio.</p>
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="terminate"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">terminate</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+<p>Terminate PortAudio.</p>
+  <dl><dt></dt><dd>
+<p><b>Attention:</b> <p>Be sure to call this method for every
+instance of this object to release PortAudio resources.</p>
+</p>
+
+  </dd></dl>
+</td></tr></table>
+
+<a name="_make_device_info_dictionary"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">_make_device_info_dictionary</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>index</span>,
+          <span class=sig-arg>device_info</span>)</span>
+  </h3>
+<p>Internal method to create Device Info dictionary
+that mirrors PortAudio's <tt class="docutils literal docutils literal"><span class="pre">PaDeviceInfo</span></tt> structure.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>dict</p>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="_make_host_api_dictionary"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">_make_host_api_dictionary</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>index</span>,
+          <span class=sig-arg>host_api_struct</span>)</span>
+  </h3>
+<p>Internal method to create Host API dictionary
+that mirrors PortAudio's <tt class="docutils literal docutils literal"><span class="pre">PaHostApiInfo</span></tt> structure.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+<p>dict</p>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="_remove_stream"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">_remove_stream</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>stream</span>)</span>
+  </h3>
+<p>Internal method. Removes a stream.</p>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>stream</b></code> -
+ <p>An instance of the <a href="pyaudio.Stream-class.html" class="link"><code>Stream</code></a> object.</p>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="pyaudio-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          PyAudio
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Thu May 25 13:09:00 2006</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

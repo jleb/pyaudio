@@ -44,11 +44,11 @@ properly.
 
     -DPA_NO_DS -DPA_NO_WDMKS -DPA_NO_ASIO -DPA_NO_WASAPI
 
-2. ...as well as these additional linker objects:
+2. ...and be sure to include these additional linker objects (OTHER_OBJS):
 
-    pa_win/pa_win_util.o 
-    pa_win/pa_win_hostapis.o
-    pa_win_wmme/pa_win_wmme.o
+    src/hostapi/wmme/pa_win_wmme.o 
+    src/os/win/pa_win_hostapis.o 
+    src/os/win/pa_win_util.o
 
 Seems like a bug in PortAudio's build infrastructure --- I've
 submitted a patch, so perhaps one day this will be fixed.

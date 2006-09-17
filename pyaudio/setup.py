@@ -31,6 +31,12 @@ import sys
 
 __revision__ = "$Revision: 14 $"
 
+
+ALSA_SUPPORT = False
+if "--with-alsa" in sys.argv:
+    ALSA_SUPPORT = True
+    sys.argv.remove("--with-alsa")
+
 STATIC_LINKING = True
 
 pyaudio_module_sources = ['_portaudiomodule.c']
@@ -111,7 +117,8 @@ elif sys.platform == 'win32':
 else:
     # probably GNU/Linux
     external_libraries += ['rt', 'm', 'pthread']
-
+    if ALSA_SUPPORT:
+        external_libraries += ['asound']
 
 pyAudio = Extension('_portaudio',
                     sources = pyaudio_module_sources,

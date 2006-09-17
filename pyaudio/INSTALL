@@ -34,7 +34,15 @@ General UNIX Guide
    % python setup.py install
 
 
-Special Notes: Cygwin
+Special Note: GNU/Linux with ALSA
+----------------------------------------------------------------------
+If you build PortAudio with ALSA support (usually the case on 
+GNU/Linux), then build PyAudio as follows:
+
+   % python setup.py build --with-alsa
+
+
+Special Note: Cygwin
 ----------------------------------------------------------------------
 When building PortAudio under Cygwin, you may have to modify
 PortAudio's Makefile in order for PortAudio to compile and link

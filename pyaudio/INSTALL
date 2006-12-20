@@ -23,7 +23,9 @@ General UNIX Guide
 
    % ./configure --with-pic && make
 
-2. Untar PyAudio inside your PortAudio build directory
+2. Untar PyAudio inside your PortAudio directory.
+   For example, if your PortAudio v19 directory is ./portaudio-v19/, 
+   then the PyAudio source should be in ./portaudio-v19/pyaudio/
 
 3. To build PyAudio, from inside the pyaudio/ directory, run:
 
@@ -84,7 +86,10 @@ I'd love to hear about it.)
 
      % CFLAGS="-mno-cygwin" LDFLAGS="-mno-cygwin" ./configure
 
-2. Untar PyAudio inside your PortAudio build directory
+2. Untar PyAudio inside your PortAudio directory.
+   For example, if your PortAudio v19 directory is ./portaudio-v19/, 
+   then the PyAudio source should be in ./portaudio-v19/pyaudio/
+
 3. To build PyAudio, from inside the pyaudio/ directory, run:
 
      % python setup.py build -cmingw32
@@ -108,7 +113,9 @@ to compile a "fat" universal binary for both PortAudio and pyAudio:
 
      % make -f Makefile.darwin
 
-2. Untar PyAudio inside your PortAudio build directory
+2. Untar PyAudio inside your PortAudio directory.
+   For example, if your PortAudio v19 directory is ./portaudio-v19/, 
+   then the PyAudio source should be in ./portaudio-v19/pyaudio/
 
 3. To build PyAudio, from inside the pyaudio/ directory, run:
 

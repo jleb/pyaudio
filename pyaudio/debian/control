@@ -1,0 +1,12 @@
+Source: python-pyaudio
+Section: sound
+Priority: optional
+Standards-Version: 3.7.3
+Build-Depends: python-all-dev, python-support (>= 0.6), debhelper(>= 5), portaudio19-dev
+Maintainer: Justin Mazzola Paluska <jmp@mit.edu>
+
+Package: python-pyaudio
+Depends: ${python:Depends}
+Provides: ${python:Provides}
+Architecture: any
+Description: Python bindings for PortAudio v19

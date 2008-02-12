@@ -37,7 +37,7 @@ if "--with-alsa" in sys.argv:
     ALSA_SUPPORT = True
     sys.argv.remove("--with-alsa")
 
-STATIC_LINKING = True
+STATIC_LINKING = False
 
 pyaudio_module_sources = ['_portaudiomodule.c']
 external_includes = ['../include']
@@ -52,13 +52,13 @@ scripts = []
 
 # for dynamic linking
 if not STATIC_LINKING:
-    external_library_dirs = ['../lib/.libs/']
+    external_library_dirs = ['/usr/lib']
     external_libraries = ['portaudio']
 
 # for static linking, be sure to include
 # the static library archive
 if STATIC_LINKING:
-    extra_link_args += ['../lib/.libs/libportaudio.a']
+    extra_link_args += ['/usr/lib/libportaudio.a']
 
 
 # platform specific configuration

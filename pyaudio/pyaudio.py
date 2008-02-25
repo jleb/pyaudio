@@ -205,6 +205,10 @@ PaErrorCode = ['paNoError',
                'paCanNotWriteToAnInputOnlyStream',
                'paIncompatibleStreamHostApi']
 
+# Mac OS X host specific stream information
+if sys.platform == "darwin":
+    paMacCoreStreamInfo = pa.paMacCoreStreamInfo
+
 ############################################################
 # Convenience Functions
 ############################################################
@@ -311,7 +315,9 @@ class Stream:
                  input_device_index = None,
                  output_device_index = None,
                  frames_per_buffer = 1024,
-                 start = True):
+                 start = True,
+                 input_host_api_specific_stream_info = None,
+                 output_host_api_specific_stream_info = None):
         """
         Initialize a stream; this should be called by
         `PyAudio.open`. A stream can either be input, output, or both.
@@ -364,15 +370,28 @@ class Stream:
         self._format = format
         self._frames_per_buffer = frames_per_buffer
 
+        arguments = {
+            'rate' : rate,
+            'channels' : channels,
+            'format' : format,
+            'input' : input,
+            'output' : output,
+            'input_device_index' : input_device_index,
+            'output_device_index' : output_device_index,
+            'frames_per_buffer' : frames_per_buffer}
+
+        if input_host_api_specific_stream_info:
+            arguments[
+                'input_host_api_specific_stream_info'
+                ] = input_host_api_specific_stream_info
+
+        if output_host_api_specific_stream_info:
+            arguments[
+                'output_host_api_specific_stream_info'
+                ] = output_host_api_specific_stream_info
+                                                             
         # calling pa.open returns a stream object
-        self._stream = pa.open(rate = rate,
-                               channels = channels,
-                               format = format,
-                               input = input,
-                               output = output,
-                               input_device_index = input_device_index,
-                               output_device_index = output_device_index,
-                               frames_per_buffer = frames_per_buffer)
+        self._stream = pa.open(**arguments)
 
         self._input_latency = self._stream.inputLatency
         self._output_latency = self._stream.outputLatency

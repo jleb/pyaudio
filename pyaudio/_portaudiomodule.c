@@ -33,6 +33,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "portaudio.h"
 #include "_portaudiomodule.h"
 
+#ifdef MACOSX
+#include "pa_mac_core.h"
+#endif
+
 #define DEFAULT_FRAMES_PER_BUFFER 1024
 /* #define VERBOSE */
 
@@ -668,6 +672,236 @@ _create_paHostApiInfo_object(void)
   return obj;
 }
 
+/*************************************************************
+ * Host-Specific Objects
+ *************************************************************/
+
+/*************************************************************
+ * --> Mac OS X
+ *************************************************************/
+
+#ifdef MACOSX
+typedef struct {
+  PyObject_HEAD
+  PaMacCoreStreamInfo *paMacCoreStreamInfo;
+  int flags;
+  SInt32 *channelMap;
+  int channelMapSize;
+} _pyAudio_MacOSX_hostApiSpecificStreamInfo;
+
+typedef _pyAudio_MacOSX_hostApiSpecificStreamInfo _pyAudio_Mac_HASSI;
+
+static void
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(_pyAudio_Mac_HASSI *self) {
+              
+  if (self->paMacCoreStreamInfo != NULL) {
+    free( self->paMacCoreStreamInfo );
+    self->paMacCoreStreamInfo = NULL;
+  }
+
+  if (self->channelMap != NULL) {
+    free( self->channelMap );
+  }
+  
+  self->flags = paMacCorePlayNice;
+  self->channelMapSize = 0;
+}
+
+static void
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_dealloc(_pyAudio_Mac_HASSI *self) {
+  _pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(self);
+  self->ob_type->tp_free( (PyObject *) self );
+}
+
+static int
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_init(_pyAudio_Mac_HASSI *self,
+					       PyObject *args,
+					       PyObject *kwargs) {
+
+  PyObject *channel_map = NULL;
+  int flags = paMacCorePlayNice;
+
+  static char *kwlist[] = {"flags", "channel_map", NULL};
+  
+  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "|iO", kwlist,
+				    &flags, &channel_map)) {
+    return -1;
+  }
+
+  // cleanup (just in case)
+  _pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(self);
+
+  if (channel_map != NULL) {
+    // ensure channel_map is an array
+    if (! PyTuple_Check(channel_map)) {
+      PyErr_SetString(PyExc_ValueError, "Channel map must be a tuple");
+      return -1;
+    }
+
+    // generate SInt32 channelMap
+    self->channelMapSize = (int) PyTuple_Size(channel_map);
+    
+    self->channelMap = (SInt32 *) malloc(sizeof(SInt32) * self->channelMapSize);
+    
+    if (self->channelMap == NULL) {
+      PyErr_SetString(PyExc_SystemError, "Out of memory");
+      _pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(self);
+      return -1;
+    }
+
+    PyObject *element;
+    int i;
+    for (i = 0; i < self->channelMapSize; ++i) {
+      element = PyTuple_GetItem(channel_map, i);
+      if (element == NULL) {
+	// error condition
+	PyErr_SetString(PyExc_ValueError, "Internal error: out of bounds index");
+	_pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(self);
+	return -1;
+      }
+      
+      // make sure element is an integer
+      if (!PyInt_Check(element)) {
+	PyErr_SetString(PyExc_ValueError, 
+			"Channel Map must consist of integer elements");
+	_pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(self);
+	return -1;
+      }
+      
+      // OK, looks good
+      self->channelMap[i] = (SInt32) PyInt_AsLong(element);
+    }
+  }
+
+  // malloc self->paMacCoreStreamInfo
+  self->paMacCoreStreamInfo = (PaMacCoreStreamInfo *) malloc(sizeof(PaMacCoreStreamInfo));
+
+  if (self->paMacCoreStreamInfo == NULL) {
+    PyErr_SetString(PyExc_SystemError, "Out of memeory");
+    _pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(self);
+    return -1;
+  }
+
+  PaMacCore_SetupStreamInfo(self->paMacCoreStreamInfo, flags);
+  
+  if (self->channelMap) {
+    PaMacCore_SetupChannelMap(self->paMacCoreStreamInfo, 
+			      self->channelMap,
+			      self->channelMapSize);
+  }
+
+  self->flags = flags;
+  
+  return 0;
+}
+
+static PyObject *
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_get_flags(_pyAudio_Mac_HASSI *self,
+						    void *closure) {
+  return PyInt_FromLong(self->flags);  
+}
+
+static PyObject *
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_get_channel_map(_pyAudio_Mac_HASSI *self,
+							  void *closure) {
+  if (self->channelMap == NULL || self->channelMapSize == 0) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  int i;
+  PyObject *channelMapTuple = PyTuple_New(self->channelMapSize);
+  for (i = 0; i < self->channelMapSize; ++i) {
+    PyObject *element = PyInt_FromLong(self->channelMap[i]);
+    if (!element) {
+      PyErr_SetString(PyExc_SystemError, "Invalid channel map");
+      return NULL;
+    }
+    
+    if (PyTuple_SetItem(channelMapTuple, 
+			i,
+			PyInt_FromLong(self->channelMap[i]))){
+      // non-zero on error
+      PyErr_SetString(PyExc_SystemError, "Can't create channel map.");
+      return NULL;
+    }
+  }
+  return channelMapTuple;
+}
+
+static int
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_antiset(_pyAudio_Mac_HASSI *self,
+						  PyObject *value,
+						  void *closure)
+{
+  /* read-only: do not allow users to change values */
+  PyErr_SetString(PyExc_AttributeError, 
+		  "Fields read-only: cannot modify values");
+  return -1;
+}
+
+static PyGetSetDef _pyAudio_MacOSX_hostApiSpecificStreamInfo_getseters[] = {
+  {"flags",
+   (getter) _pyAudio_MacOSX_hostApiSpecificStreamInfo_get_flags,
+   (setter) _pyAudio_MacOSX_hostApiSpecificStreamInfo_antiset,
+   "flags",
+   NULL},
+
+  {"channel_map",
+   (getter) _pyAudio_MacOSX_hostApiSpecificStreamInfo_get_channel_map,
+   (setter) _pyAudio_MacOSX_hostApiSpecificStreamInfo_antiset,
+   "channel map",
+   NULL},
+
+  {NULL}
+};
+
+static PyTypeObject _pyAudio_MacOSX_hostApiSpecificStreamInfoType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "_portaudio.PaMacCoreStreamInfo", /*tp_name*/
+    sizeof(_pyAudio_MacOSX_hostApiSpecificStreamInfo),   /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) _pyAudio_MacOSX_hostApiSpecificStreamInfo_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "Mac OS X Specific HostAPI configuration",       /* tp_doc */
+    0,  /* tp_traverse */
+    0,  /* tp_clear */
+    0,  /* tp_richcompare */
+    0,  /* tp_weaklistoffset */
+    0,  /* tp_iter */
+    0,  /* tp_iternext */
+    0,  /* tp_methods */
+    0,  /* tp_members */
+    _pyAudio_MacOSX_hostApiSpecificStreamInfo_getseters,  /* tp_getset */
+    0,  /* tp_base */
+    0,  /* tp_dict */
+    0,  /* tp_descr_get */
+    0,  /* tp_descr_set */
+    0,  /* tp_dictoffset */
+    _pyAudio_MacOSX_hostApiSpecificStreamInfo_init,  /* tp_init */
+    0,  /* tp_alloc */
+    0,  /* tp_new */
+};
+
+#endif
+
+
+
 
 /*************************************************************
  * Stream Wrapper Python Object
@@ -1262,6 +1496,15 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
   PaSampleFormat format;
   PaError err;
 
+#ifdef MACOSX
+  _pyAudio_MacOSX_hostApiSpecificStreamInfo *inputHostSpecificStreamInfo = NULL;
+  _pyAudio_MacOSX_hostApiSpecificStreamInfo *outputHostSpecificStreamInfo = NULL;
+#else
+  /* mostly ignored...*/
+  PyObject *inputHostSpecificStreamInfo = NULL;
+  PyObject *outputHostSpecificStreamInfo = NULL;
+#endif
+
   /* default to neither output nor input */
   input = 0;
   output = 0;
@@ -1277,15 +1520,31 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 			   "input_device_index",
 			   "output_device_index",
 			   "frames_per_buffer", 
+			   "input_host_api_specific_stream_info",
+			   "output_host_api_specific_stream_info",
 			   NULL};
 			   
   
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "iii|iiOOi", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, 
+#ifdef MACOSX
+				   "iii|iiOOiO!O!", 
+#else
+				   "iii|iiOOiOO",
+#endif
+				   kwlist, 
 				   &rate, &channels, &format, 
 				   &input, &output,
 				   &input_device_index_arg,
 				   &output_device_index_arg,
-				   &frames_per_buffer))
+				   &frames_per_buffer,
+#ifdef MACOSX				   
+				   &_pyAudio_MacOSX_hostApiSpecificStreamInfoType,
+#endif
+				   &inputHostSpecificStreamInfo,
+#ifdef MACOSX				   
+				   &_pyAudio_MacOSX_hostApiSpecificStreamInfoType,
+#endif
+				   &outputHostSpecificStreamInfo))
     
     return NULL;
 
@@ -1398,6 +1657,14 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
     outputParameters->suggestedLatency = 
       Pa_GetDeviceInfo( outputParameters->device )->defaultLowOutputLatency;
     outputParameters->hostApiSpecificStreamInfo = NULL;
+
+#ifdef MACOSX
+    if (outputHostSpecificStreamInfo) {
+      outputParameters->hostApiSpecificStreamInfo = 
+	outputHostSpecificStreamInfo->paMacCoreStreamInfo;
+    }
+#endif
+
   }
 
   if (input) {
@@ -1425,6 +1692,13 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
     inputParameters->suggestedLatency = 
       Pa_GetDeviceInfo( inputParameters->device )->defaultLowInputLatency;
     inputParameters->hostApiSpecificStreamInfo = NULL;
+
+#ifdef MACOSX
+    if (inputHostSpecificStreamInfo) {
+      inputParameters->hostApiSpecificStreamInfo = 
+	inputHostSpecificStreamInfo->paMacCoreStreamInfo;
+    }
+#endif
   }
 
   PaStream *stream = NULL;
@@ -2104,11 +2378,23 @@ init_portaudio(void)
   if (PyType_Ready(&_pyAudio_paHostApiInfoType) < 0)
     return;
 
+#ifdef MACOSX
+  _pyAudio_MacOSX_hostApiSpecificStreamInfoType.tp_new = PyType_GenericNew;
+  if (PyType_Ready(&_pyAudio_MacOSX_hostApiSpecificStreamInfoType) < 0)
+    return;
+#endif
+
   m = Py_InitModule("_portaudio", paMethods);
 
   Py_INCREF(&_pyAudio_StreamType);
   Py_INCREF(&_pyAudio_paDeviceInfoType);
   Py_INCREF(&_pyAudio_paHostApiInfoType);
+
+#ifdef MACOSX
+  Py_INCREF(&_pyAudio_MacOSX_hostApiSpecificStreamInfoType);
+  PyModule_AddObject(m, "paMacCoreStreamInfo", 
+		     (PyObject *)&_pyAudio_MacOSX_hostApiSpecificStreamInfoType);
+#endif
 
   /* Add PortAudio constants */
 
@@ -2179,6 +2465,31 @@ init_portaudio(void)
 			  paCanNotWriteToAnInputOnlyStream);
   PyModule_AddIntConstant(m, "paIncompatibleStreamHostApi", 
 			  paIncompatibleStreamHostApi);
+
+#ifdef MACOSX
+  PyModule_AddIntConstant(m, "paMacCoreChangeDeviceParameters",
+			  paMacCoreChangeDeviceParameters);
+  PyModule_AddIntConstant(m, "paMacCoreFailIfConversionRequired",
+			  paMacCoreFailIfConversionRequired);
+  PyModule_AddIntConstant(m, "paMacCoreConversionQualityMin",
+			  paMacCoreConversionQualityMin);
+  PyModule_AddIntConstant(m, "MacCoreConversionQualityMedium", 
+			  paMacCoreConversionQualityMedium);
+  PyModule_AddIntConstant(m, "paMacCoreConversionQualityLow", 
+			  paMacCoreConversionQualityLow);
+  PyModule_AddIntConstant(m, "paMacCoreConversionQualityHigh", 
+			  paMacCoreConversionQualityHigh);
+  PyModule_AddIntConstant(m, "paMacCoreConversionQualityMax", 
+			  paMacCoreConversionQualityMax);
+  PyModule_AddIntConstant(m, "paMacCorePlayNice", 
+			  paMacCorePlayNice);
+  PyModule_AddIntConstant(m, "paMacCorePro", 
+			  paMacCorePro);
+  PyModule_AddIntConstant(m, "paMacCoreMinimizeCPUButPlayNice", 
+			  paMacCoreMinimizeCPUButPlayNice);
+  PyModule_AddIntConstant(m, "paMacCoreMinimizeCPU", 
+			  paMacCoreMinimizeCPU);
+#endif
 
 }
 

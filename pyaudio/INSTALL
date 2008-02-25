@@ -107,7 +107,7 @@ Apple Mac OS X
 ----------------------------------------------------------------------
 
 If you are using the MacPython 2.4.3 (Universal Binary), you will need
-to compile a "fat" universal binary for both PortAudio and pyAudio:
+to compile a "fat" universal binary for both PortAudio and PyAudio:
 
 1. Build PortAudio v19 as a fat binary; be sure to use Makefile.darwin:
 

@@ -1,0 +1,52 @@
+# This is the PyAudio distribution makefile. You probably
+# don't care about this unless you're interested in making
+# PyAudio binary packages for various platforms.
+
+.PHONY: pyaudio_lib
+
+VERSION=0.2.0
+DIST=dist
+PACKAGING=packaging
+VOLNAME_FILENAME=pyaudio-$(VERSION)
+VOLNAME=PyAudio\ $(VERSION)
+INPUT="dist/PyAudio-0.2.0-py2.5-macosx10.5.mpkg"
+DS_STORE=DS_Store
+# add 20480 sectors (~10MB) for safety; we'll shrink it later
+SECTORS=`du -s $(INPUT) | awk '{print $$1 + 20480}'`
+HDIUTIL=hdiutil
+MAC_SNAKEY=snakey.tif
+
+what: 
+	@echo "make targets:"
+	@echo
+	@echo " win32      : windows installer"
+	@echo " macosx     : mac os x installer"
+	@echo " deb        : debian package"
+
+macosx: 
+	python setup.py build --static-link	
+	bdist_mpkg
+
+	rm -f $(DIST)/$(VOLNAME_FILENAME).dmg
+	@echo "Creating a DMG with $(SECTORS) sectors"
+	$(HDIUTIL) create -sectors $(SECTORS) -fs HFS+ -volname $(VOLNAME) $(DIST)/$(VOLNAME_FILENAME).dmg
+	$(HDIUTIL) attach $(DIST)/$(VOLNAME_FILENAME).dmg
+	@echo "Copying Data"
+	mkdir /Volumes/$(VOLNAME)/.packaging
+	cp $(PACKAGING)/$(DS_STORE) /Volumes/$(VOLNAME)/.$(DS_STORE)
+	cp $(PACKAGING)/$(MAC_SNAKEY) /Volumes/$(VOLNAME)/.packaging/$(MAC_SNAKEY)
+	cp -r $(INPUT) /Volumes/$(VOLNAME)/Install\ PyAudio.mpkg
+	SetFile -a E /Volumes/$(VOLNAME)/Install\ PyAudio.mpkg
+	@echo "Done Copying"
+	$(HDIUTIL) detach /Volumes/$(VOLNAME)
+	@echo "Resizing DMG"
+	$(HDIUTIL) resize -sectors `$(HDIUTIL) resize $(DIST)/$(VOLNAME_FILENAME).dmg | awk '{print $$1}'` $(DIST)/$(VOLNAME_FILENAME).dmg
+	@echo "Compressing DMG"
+	$(HDIUTIL) convert -imagekey zlib-level=9 -format UDZO $(DIST)/$(VOLNAME_FILENAME).dmg -o $(DIST)/$(VOLNAME_FILENAME).tmp.dmg
+	mv $(DIST)/$(VOLNAME_FILENAME).tmp.dmg $(DIST)/$(VOLNAME_FILENAME).dmg
+
+win32:
+	python2 setup.py build -cmingw32 --static-link
+	python2 setup.py bdist_wininst --skip-build -t PyAudio \
+	--bitmap=$(PACKAGING)/win-background.bmp \
+#	--install-script=postinst.py \

@@ -1,7 +1,7 @@
 """
-pyAudio v0.1.0: Python Bindings for PortAudio.
+PyAudio v0.2.0: Python Bindings for PortAudio.
 
-Copyright (c) 2006 Hubert Pham
+Copyright (c) 2006-2008 Hubert Pham
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -31,110 +31,86 @@ import sys
 
 __revision__ = "$Revision: 14 $"
 
-
-ALSA_SUPPORT = False
-if "--with-alsa" in sys.argv:
-    ALSA_SUPPORT = True
-    sys.argv.remove("--with-alsa")
+# Note: distutils will try to locate and link dynamically
+#       against portaudio.
+#
+#       You probably don't want to statically link in the PortAudio
+#       library unless you're building on Microsoft Windows.
+#
+#       In any case, if you would rather statically link in libportaudio,
+#       run:
+#
+#       % python setup.py build --static-link
+#
+#       Be sure to specify the location of the libportaudio.a in
+#       the `extra_link_args' variable below.
 
 STATIC_LINKING = False
 
+if "--static-link" in sys.argv:
+    STATIC_LINKING = True
+    sys.argv.remove("--static-link")
+    
 pyaudio_module_sources = ['_portaudiomodule.c']
-external_includes = ['../include']
 
-external_library_dirs = []
+include_dirs = []
 external_libraries = []
-
-extra_compile_args = []
 extra_link_args = []
-
 scripts = []
 
-# for dynamic linking
-if not STATIC_LINKING:
-    external_library_dirs = ['/usr/lib']
-    external_libraries = ['portaudio']
-
-# for static linking, be sure to include
-# the static library archive
 if STATIC_LINKING:
-    extra_link_args += ['/usr/lib/libportaudio.a']
-
-
-# platform specific configuration
-if sys.platform == 'darwin':
-
-    # take care of portaudio Darwin build dichotomy
-    # (as of 5/23/2006, portaudio's Makefile.darwin
-    #  stashes libraries in ../lib/ rather than
-    #  ../lib/.libs as autoconf does.)
-    if STATIC_LINKING:
-        import os
-        try:
-            # see if this file exists
-            os.stat('../lib/.libs/libportaudio.a')
-        except OSError:
-            # no? then get rid of it...
-            try:
-                extra_link_args.remove('../lib/.libs/libportaudio.a')
-            except ValueError:
-                pass
-            # and add the static library from where
-            # we suspect it to really be
-            extra_link_args += ['../lib/libportaudio.a']
-        else:
-            pass
-        
-    extra_link_args += ['-framework', 'CoreAudio',
-                        '-framework', 'AudioToolbox',
-                        '-framework', 'AudioUnit',
-                        '-framework', 'Carbon']
-    try:
-        import bdist_mpkg
-    except ImportError, e:
-        pass
-    
-elif sys.platform == 'cygwin':
-    external_libraries += ['winmm']
-
-    if STATIC_LINKING:
-        extra_link_args += ['-lwinmm']    
-
-    
-elif sys.platform == 'win32':
-    # i.e., Win32 Python with mingw32
-    # run: python setup.py build -cmingw32
-    # libraries += ['winmm']
-    external_libraries += ['winmm']
-    scripts += ['postinst.py']
-
-    # a hack: be sure to include winmm libraries
-    # at the end so that they are included after
-    # static linking
-    if STATIC_LINKING:
-        extra_link_args += ['-lwinmm']    
-    
+    extra_link_args = ['../portaudio-v19/lib/.libs/libportaudio.a']
+    include_dirs = ['../portaudio-v19/include/']
 else:
-    # probably GNU/Linux
-    external_libraries += ['rt', 'm', 'pthread']
-    if ALSA_SUPPORT:
-        external_libraries += ['asound']
+    # dynamic linking
+    external_libraries = ['portaudio']
+    extra_link_args = []
 
-pyAudio = Extension('_portaudio',
+if STATIC_LINKING:
+
+    # platform specific configuration
+    if sys.platform == 'darwin':
+        extra_link_args += ['-framework', 'CoreAudio',
+                            '-framework', 'AudioToolbox',
+                            '-framework', 'AudioUnit',
+                            '-framework', 'Carbon']
+
+    elif sys.platform == 'cygwin':
+        external_libraries += ['winmm']
+        extra_link_args += ['-lwinmm']
+        
+    elif sys.platform == 'win32':
+        # i.e., Win32 Python with mingw32
+        # run: python setup.py build -cmingw32
+        external_libraries += ['winmm']
+        extra_link_args += ['-lwinmm']
+        scripts += ['packaging/postinst.py']
+        
+    elif sys.platform == 'linux2':        
+        external_libraries += ['rt', 'm', 'pthread']
+
+        # Since you're insisting on linking statically against
+        # PortAudio on GNU/Linux, be sure to link in whatever sound
+        # backend you used in portaudio (e.g., ALSA, JACK, etc...)
+
+        # I'll start you off with ALSA, since that's the most common
+        # today. If you need JACK support, add it here.
+
+        external_libraries += ['asound']
+        
+
+pyaudio = Extension('_portaudio',
                     sources = pyaudio_module_sources,
-                    include_dirs = external_includes,
-                    library_dirs = external_library_dirs,
+                    include_dirs = include_dirs,
                     libraries = external_libraries,
-                    extra_compile_args = extra_compile_args,
                     extra_link_args = extra_link_args)
                
-setup (name = 'pyAudio',
-       version = '0.1.0',
+setup (name = 'PyAudio',
+       version = '0.2.0',
        author = "Hubert Pham",
        url = "http://people.csail.mit.edu/hubert/pyaudio/",
        description = 'PortAudio Python Bindings',
        long_description = __doc__.lstrip(),
-       py_modules = ['pyaudio'],
-       # postinstall script mainly for bdist_wininst
        scripts = scripts,
-       ext_modules = [pyAudio])
+       py_modules = ['pyaudio'],
+       ext_modules = [pyaudio])

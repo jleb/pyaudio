@@ -57,6 +57,7 @@ include_dirs = []
 external_libraries = []
 extra_link_args = []
 scripts = []
+defines = []
 
 if STATIC_LINKING:
     extra_link_args = ['../portaudio-v19/lib/.libs/libportaudio.a']
@@ -65,6 +66,9 @@ else:
     # dynamic linking
     external_libraries = ['portaudio']
     extra_link_args = []
+
+if sys.platform == 'darwin':
+    defines += [('MACOSX', '1')]
 
 if STATIC_LINKING:
 
@@ -102,6 +106,7 @@ if STATIC_LINKING:
 pyaudio = Extension('_portaudio',
                     sources = pyaudio_module_sources,
                     include_dirs = include_dirs,
+                    define_macros = defines,
                     libraries = external_libraries,
                     extra_link_args = extra_link_args)
                

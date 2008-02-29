@@ -4,12 +4,29 @@
 
 .PHONY: pyaudio_lib
 
+SYSTEM_PYTHON25_DIR=/System/Library/Frameworks/Python.framework/Versions/2.5/bin
+MAC_PYTHON25_DIR=/Library/Frameworks/Python.framework/Versions/2.5/bin
+MAC_PYTHON24_DIR=/Library/Frameworks/Python.framework/Versions/2.4/bin
+
+SYSTEM_PYTHON25_BDIST=/usr/local/bin/bdist_mpkg
+MAC_PYTHON25_BDIST=$(MAC_PYTHON25_DIR)/bdist_mpkg
+MAC_PYTHON24_BDIST=$(MAC_PYTHON24_DIR)/bdist_mpkg
+
+PYTHON25_PKG="dist/PyAudio-0.2.0-py2.5-macosx10.5.mpkg"
+SYS_PYTHON25_PKG="dist/PyAudio-0.2.0-sys-py2.5-macosx10.5.mpkg"
+MAC_PYTHON25_PKG="dist/PyAudio-0.2.0-mac-py2.5-macosx10.5.mpkg"
+MAC_PYTHON24_PKG="dist/PyAudio-0.2.0-py2.4-macosx10.5.mpkg"
+
+INPUT="dist/pyaudio-0.2.0.mpkg"
+
+PACKAGEMAKER="/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"
+PACKAGEDOC="packaging/pyaudio-0.2.0-mpkg.pmdoc"
+
 VERSION=0.2.0
 DIST=dist
 PACKAGING=packaging
 VOLNAME_FILENAME=pyaudio-$(VERSION)
 VOLNAME=PyAudio\ $(VERSION)
-INPUT="dist/PyAudio-0.2.0-py2.5-macosx10.5.mpkg"
 DS_STORE=DS_Store
 # add 20480 sectors (~10MB) for safety; we'll shrink it later
 SECTORS=`du -s $(INPUT) | awk '{print $$1 + 20480}'`
@@ -24,11 +41,29 @@ what:
 	@echo " deb        : debian package"
 
 macosx: 
-	python setup.py build --static-link	
-	bdist_mpkg
+	rm -rf $(SYS_PYTHON25_PKG) $(MAC_PYTHON25_PKG) $(MAC_PYTHON24_PKG)
+
+	@echo "Building System Python 2.5 Package"
+	$(SYSTEM_PYTHON25_DIR)/python setup.py build --static-link	
+	$(SYSTEM_PYTHON25_BDIST)
+	mv $(PYTHON25_PKG) $(SYS_PYTHON25_PKG)
+
+	@echo "Building MacPython 2.5 Package"
+	$(MAC_PYTHON25_DIR)/python setup.py build --static-link	
+	$(MAC_PYTHON25_BDIST)
+	mv $(PYTHON25_PKG) $(MAC_PYTHON25_PKG)
+
+	@echo "Building MacPython 2.4 Package"
+	$(MAC_PYTHON24_DIR)/python setup.py build --static-link	
+	$(MAC_PYTHON24_BDIST)
+
+	@echo "Making Meta Package"
+	$(PACKAGEMAKER) --doc $(PACKAGEDOC) --out $(INPUT)
 
 	rm -f $(DIST)/$(VOLNAME_FILENAME).dmg
+
 	@echo "Creating a DMG with $(SECTORS) sectors"
+	
 	$(HDIUTIL) create -sectors $(SECTORS) -fs HFS+ -volname $(VOLNAME) $(DIST)/$(VOLNAME_FILENAME).dmg
 	$(HDIUTIL) attach $(DIST)/$(VOLNAME_FILENAME).dmg
 	@echo "Copying Data"

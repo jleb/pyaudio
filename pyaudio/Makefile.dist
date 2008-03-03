@@ -85,3 +85,6 @@ win32:
 	python2 setup.py bdist_wininst --skip-build -t PyAudio \
 	--bitmap=$(PACKAGING)/win-background.bmp \
 #	--install-script=postinst.py \
+
+deb:
+	debuild -uc -us

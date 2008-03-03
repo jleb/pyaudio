@@ -2473,7 +2473,7 @@ init_portaudio(void)
 			  paMacCoreFailIfConversionRequired);
   PyModule_AddIntConstant(m, "paMacCoreConversionQualityMin",
 			  paMacCoreConversionQualityMin);
-  PyModule_AddIntConstant(m, "MacCoreConversionQualityMedium", 
+  PyModule_AddIntConstant(m, "paMacCoreConversionQualityMedium", 
 			  paMacCoreConversionQualityMedium);
   PyModule_AddIntConstant(m, "paMacCoreConversionQualityLow", 
 			  paMacCoreConversionQualityLow);

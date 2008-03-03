@@ -1,4 +1,4 @@
-""" PyAudio Example: Play a wave file """
+""" PyAudio Example: Mac OS X-only: Play a wave file with channel maps. """
 
 import pyaudio
 import wave

@@ -2,7 +2,13 @@
 # don't care about this unless you're interested in making
 # PyAudio binary packages for various platforms.
 
-.PHONY: pyaudio_lib
+.PHONY: pyaudio_lib docs
+
+# documentation
+EPYDOC=epydoc
+DOCS_OUTPUT=docs/
+DOC_NAME=PyAudio-0.2.0
+DOC_URL=http://people.csail.mit.edu/hubert/pyaudio/
 
 SYSTEM_PYTHON25_DIR=/System/Library/Frameworks/Python.framework/Versions/2.5/bin
 MAC_PYTHON25_DIR=/Library/Frameworks/Python.framework/Versions/2.5/bin
@@ -39,7 +45,7 @@ what:
 	@echo " win32      : windows installer"
 	@echo " macosx     : mac os x installer"
 	@echo " deb        : debian package"
-
+	@echo " docs       : documentation"
 macosx: 
 	rm -rf $(SYS_PYTHON25_PKG) $(MAC_PYTHON25_PKG) $(MAC_PYTHON24_PKG)
 
@@ -88,3 +94,7 @@ win32:
 
 deb:
 	debuild -uc -us
+
+docs:
+	$(EPYDOC) -v -o $(DOCS_OUTPUT) --name $(DOC_NAME) --url $(DOC_URL) \
+	--no-private pyaudio.py

@@ -85,7 +85,7 @@
 :sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode
 :sort: PortAudio Constants, PaSampleFormat Values,
        PaHostApiTypeId Values, PaErrorCode Values
-:sort: __author__, __version__, __revision__
+:sort: __revision__
                         
 """
 
@@ -1009,8 +1009,10 @@ else:
         Specific Stream Info data structure for specifying Mac OS
         X-only settings. Instantiate this class (if desired) and pass
         the instance as the argument in `PyAudio.open` to parameters
-        `input_host_api_specific_stream_info` or
-        `output_host_api_specific_stream_info`. (See `Stream.__init__`.)
+        ``input_host_api_specific_stream_info`` or
+        ``output_host_api_specific_stream_info``. (See `Stream.__init__`.)
+
+        :note: Mac OS X only.
 
         :group Flags (constants):
           paMacCoreChangeDeviceParameters, paMacCoreFailIfConversionRequired,

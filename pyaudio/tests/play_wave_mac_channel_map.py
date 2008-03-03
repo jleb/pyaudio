@@ -38,9 +38,16 @@ p = PyAudio()
 channel_map = (1, -1)
 # etc...
 
-stream_info = pyaudio.PaMacCoreStreamInfo(
-    flags = pyaudio.PaMacCoreStreamInfo.paMacCorePlayNice, # default
-    channel_map = channel_map)
+try:
+    stream_info = pyaudio.PaMacCoreStreamInfo(
+        flags = pyaudio.PaMacCoreStreamInfo.paMacCorePlayNice, # default
+        channel_map = channel_map)
+except AttributeError:
+    print "Sorry, couldn't find PaMacCoreStreamInfo. Make sure that " \
+          "you're running on Mac OS X."
+    import sys
+    sys.exit(-1)
+    
 print "Stream Info Flags:", stream_info.get_flags()
 print "Stream Info Channel Map:", stream_info.get_channel_map()
 

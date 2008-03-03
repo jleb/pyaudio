@@ -8,31 +8,23 @@ platforms:
     * General UNIX Guide: (GNU/Linux, Mac OS X, Cygwin)
     * Microsoft Windows (native)
 
-Generally speaking, you must first download and compile PortAudio v19,
-then untar and build PyAudio inside the PortAudio build directory.
- 
+Generally speaking, you must first install the PortAudio v19 library
+first before building PyAudio.
+
 
 ----------------------------------------------------------------------
 General UNIX Guide (GNU/Linux, Mac OS X, Cygwin)
 ----------------------------------------------------------------------
 
-1. Download PortAudio to portaudio-v19/ and install it, i.e.:
+1. Build and install PortAudio, i.e.:
 
-   % cd portaudio-v19
    % ./configure
    % make
    % make install # you may need to be root
 
-2. Untar PyAudio in the same (parent) directory that contains your
-   PortAudio directory. For example, if your PortAudio v19 directory
-   is ~/portaudio-v19/, then the PyAudio source should be in
-   ~/pyaudio-0.2.0/
+   (Or better yet, use your package manager to install PortAudio v19)
 
-3. To build PyAudio, from inside the pyaudio-0.2.0/ directory, run:
-
-   % python setup.py build
-
-4. To install PyAudio:
+2. Extract PyAudio; to build and install, run:
 
    % python setup.py install
 
@@ -52,9 +44,9 @@ MinGW's compiler and environment).
 (If you have instructions for building PyAudio using Visual Studio,
 I'd love to hear about it.)
 
-1. Download PortAudio to portaudio-v19/; when running configure, 
-   be sure to use ``-mno-cygwin`` (under cygwin) to generate native 
-   Win32 binaries:
+1. Download PortAudio to portaudio-v19/ and build; when running
+   configure, be sure to use ``-mno-cygwin`` (under cygwin) to
+   generate native Win32 binaries:
 
      % CFLAGS="-mno-cygwin" LDFLAGS="-mno-cygwin" ./configure
      % make
@@ -64,7 +56,7 @@ I'd love to hear about it.)
    is ~/portaudio-v19/, then the PyAudio source should be in
    ~/pyaudio-0.2.0/
 
-3. To build PyAudio, from inside the pyaudio/ directory, run:
+3. To build PyAudio, from inside the pyaudio-0.2.0/ directory, run:
 
      % python setup.py build --static-link -cmingw32
 

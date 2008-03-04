@@ -9,7 +9,7 @@ platforms:
     * Microsoft Windows (native)
 
 Generally speaking, you must first install the PortAudio v19 library
-first before building PyAudio.
+before building PyAudio.
 
 
 ----------------------------------------------------------------------
@@ -60,9 +60,10 @@ I'd love to hear about it.)
 
      % python setup.py build --static-link -cmingw32
 
-   The --static-link option statically links in the PortAudio
-   library to the PyAudio module, which is probably the best
-   way to go on Windows.
+   Be sure to invoke the native Win32 python rather than cygwin's
+   python.  The --static-link option statically links in the PortAudio
+   library to the PyAudio module, which is probably the best way to go
+   on Windows.
 
 4. To install PyAudio:
 

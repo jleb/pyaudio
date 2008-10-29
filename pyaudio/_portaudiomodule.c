@@ -1527,9 +1527,9 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
   
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, 
 #ifdef MACOSX
-				   "iii|iiOOiO!O!", 
+				   "iik|iiOOiO!O!", 
 #else
-				   "iii|iiOOiOO",
+				   "iik|iiOOiOO",
 #endif
 				   kwlist, 
 				   &rate, &channels, &format, 
@@ -1780,7 +1780,7 @@ pa_get_sample_size(PyObject *self, PyObject *args)
   PaSampleFormat format;
   int size_in_bytes;
 
-  if (!PyArg_ParseTuple(args, "i", &format))
+  if (!PyArg_ParseTuple(args, "k", &format))
     return NULL;
 
   size_in_bytes = Pa_GetSampleSize(format);
@@ -1824,7 +1824,7 @@ pa_is_format_supported(PyObject *self, PyObject *args,
 
   input_format = output_format = -1;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "f|iiiiii", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "f|iikiik", kwlist,
 				   &sample_rate, 
 				   &input_device, 
 				   &input_channels,
@@ -2190,8 +2190,11 @@ pa_write_stream(PyObject *self, PyObject *args)
 
   PaStream *stream = streamObject->stream;
 
-  if ((err = Pa_WriteStream( stream, data, total_frames )) != paNoError) {
+  Py_BEGIN_ALLOW_THREADS
+  err = Pa_WriteStream(stream, data, total_frames);
+  Py_END_ALLOW_THREADS
 
+  if (err != paNoError) {
     if (err == paOutputUnderflowed) {
       if (should_throw_exception) 
 	goto error;
@@ -2270,12 +2273,12 @@ pa_read_stream(PyObject *self, PyObject *args)
     return NULL;
   }
 
+  Py_BEGIN_ALLOW_THREADS
   err = Pa_ReadStream(stream, sampleBlock, total_frames);
+  Py_END_ALLOW_THREADS
 
-  if (err) {
-
+  if (err != paNoError) {
     /* ignore input overflow and output underflow */
-
     if( err & paInputOverflowed ) {
 #ifdef VERBOSE     
       fprintf( stderr, "Input Overflow.\n" );
@@ -2289,7 +2292,6 @@ pa_read_stream(PyObject *self, PyObject *args)
     else {
       /* clean up */
       _cleanup_Stream_object(streamObject);
-      /* Pa_Terminate(); */
     }
            
     /* free the string buffer */

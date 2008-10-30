@@ -85,13 +85,11 @@
 :sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode
 :sort: PortAudio Constants, PaSampleFormat Values,
        PaHostApiTypeId Values, PaErrorCode Values
-:sort: __revision__
                         
 """
 
 __author__ = "Hubert Pham"
-__version__ = "0.2.0"
-__revision__ = "$Revision: 6 $"
+__version__ = "0.2.3"
 __docformat__ = "restructuredtext en"
 
 import sys

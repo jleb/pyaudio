@@ -1,9 +1,9 @@
 /*
-pyAudio : Python Bindings for PortAudio. 
+PyAudio : Python Bindings for PortAudio. 
 
 May-2006: Supports Non-Blocking mode only
 
-Copyright (c) 2006 Hubert Pham
+Copyright (c) 2006-2008 Hubert Pham
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,11 +23,8 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 */
 
-
-/* $Revision: 6 $ */
 
 #include "Python.h"
 #include "portaudio.h"
@@ -755,7 +752,8 @@ _pyAudio_MacOSX_hostApiSpecificStreamInfo_init(_pyAudio_Mac_HASSI *self,
       element = PyTuple_GetItem(channel_map, i);
       if (element == NULL) {
 	// error condition
-	PyErr_SetString(PyExc_ValueError, "Internal error: out of bounds index");
+	PyErr_SetString(PyExc_ValueError,
+			"Internal error: out of bounds index");
 	_pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(self);
 	return -1;
       }
@@ -774,7 +772,8 @@ _pyAudio_MacOSX_hostApiSpecificStreamInfo_init(_pyAudio_Mac_HASSI *self,
   }
 
   // malloc self->paMacCoreStreamInfo
-  self->paMacCoreStreamInfo = (PaMacCoreStreamInfo *) malloc(sizeof(PaMacCoreStreamInfo));
+  self->paMacCoreStreamInfo =
+      (PaMacCoreStreamInfo *) malloc(sizeof(PaMacCoreStreamInfo));
 
   if (self->paMacCoreStreamInfo == NULL) {
     PyErr_SetString(PyExc_SystemError, "Out of memeory");
@@ -820,7 +819,7 @@ _pyAudio_MacOSX_hostApiSpecificStreamInfo_get_channel_map(_pyAudio_Mac_HASSI *se
     
     if (PyTuple_SetItem(channelMapTuple, 
 			i,
-			PyInt_FromLong(self->channelMap[i]))){
+			PyInt_FromLong(self->channelMap[i]))) {
       // non-zero on error
       PyErr_SetString(PyExc_SystemError, "Can't create channel map.");
       return NULL;
@@ -2489,6 +2488,5 @@ init_portaudio(void)
   PyModule_AddIntConstant(m, "paMacCoreMinimizeCPU", 
 			  paMacCoreMinimizeCPU);
 #endif
-
 }
 

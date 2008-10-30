@@ -7,7 +7,7 @@
 # documentation
 EPYDOC=epydoc
 DOCS_OUTPUT=docs/
-DOC_NAME=PyAudio-0.2.0
+DOC_NAME=PyAudio-0.2.3
 DOC_URL=http://people.csail.mit.edu/hubert/pyaudio/
 
 SYSTEM_PYTHON25_DIR=/System/Library/Frameworks/Python.framework/Versions/2.5/bin

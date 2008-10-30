@@ -111,15 +111,14 @@ static PyMethodDef paMethods[] = {
    "get device information"},
 
   /* stream open/close */
-  {"open", pa_open, METH_VARARGS | METH_KEYWORDS, "open port audio stream"},
+  {"open", (PyCFunction) pa_open, METH_VARARGS | METH_KEYWORDS,
+   "open port audio stream"},
   {"close", pa_close, METH_VARARGS, "close port audio stream"},
   {"get_sample_size", pa_get_sample_size, METH_VARARGS, 
    "get sample size of a format in bytes"},
-  {"is_format_supported", pa_is_format_supported, 
+  {"is_format_supported", (PyCFunction) pa_is_format_supported, 
    METH_VARARGS | METH_KEYWORDS, 
    "returns whether specified format is supported"},
-   
-
 
   /* stream start/stop */
   {"start_stream", pa_start_stream, METH_VARARGS, "starts port audio stream"},
@@ -174,7 +173,7 @@ _pyAudio_paDeviceInfo_get_structVersion(_pyAudio_paDeviceInfo *self,
 					void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) ) {
+  if (!self->devInfo) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -185,10 +184,10 @@ _pyAudio_paDeviceInfo_get_structVersion(_pyAudio_paDeviceInfo *self,
 
 static PyObject *
 _pyAudio_paDeviceInfo_get_name(_pyAudio_paDeviceInfo *self,
-			      void *closure) 
+			       void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) || (self->devInfo->name == NULL) ) {
+  if ((!self->devInfo) || (self->devInfo->name == NULL)) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -199,10 +198,10 @@ _pyAudio_paDeviceInfo_get_name(_pyAudio_paDeviceInfo *self,
 
 static PyObject *
 _pyAudio_paDeviceInfo_get_hostApi(_pyAudio_paDeviceInfo *self,
-			      void *closure) 
+				  void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) ) {
+  if (!self->devInfo) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -216,7 +215,7 @@ _pyAudio_paDeviceInfo_get_maxInputChannels(_pyAudio_paDeviceInfo *self,
 					   void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) ) {
+  if (!self->devInfo) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -230,7 +229,7 @@ _pyAudio_paDeviceInfo_get_maxOutputChannels(_pyAudio_paDeviceInfo *self,
 					    void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) ) {
+  if (!self->devInfo) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -244,7 +243,7 @@ _pyAudio_paDeviceInfo_get_defaultLowInputLatency(_pyAudio_paDeviceInfo *self,
 						 void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) ) {
+  if (!self->devInfo) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -255,10 +254,10 @@ _pyAudio_paDeviceInfo_get_defaultLowInputLatency(_pyAudio_paDeviceInfo *self,
 
 static PyObject *
 _pyAudio_paDeviceInfo_get_defaultLowOutputLatency(_pyAudio_paDeviceInfo *self,
-						 void *closure) 
+						  void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) ) {
+  if (!self->devInfo) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -270,10 +269,10 @@ _pyAudio_paDeviceInfo_get_defaultLowOutputLatency(_pyAudio_paDeviceInfo *self,
 
 static PyObject *
 _pyAudio_paDeviceInfo_get_defaultHighInputLatency(_pyAudio_paDeviceInfo *self,
-						 void *closure) 
+						  void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) ) {
+  if (!self->devInfo) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -284,10 +283,10 @@ _pyAudio_paDeviceInfo_get_defaultHighInputLatency(_pyAudio_paDeviceInfo *self,
 
 static PyObject *
 _pyAudio_paDeviceInfo_get_defaultHighOutputLatency(_pyAudio_paDeviceInfo *self,
-						 void *closure) 
+						   void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) ) {
+  if (!self->devInfo) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -301,7 +300,7 @@ _pyAudio_paDeviceInfo_get_defaultSampleRate(_pyAudio_paDeviceInfo *self,
 					    void *closure) 
 {
   /* sanity check */
-  if ( (!self->devInfo) ) {
+  if (!self->devInfo) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No Device Info available");
     return NULL;
@@ -472,7 +471,7 @@ _pyAudio_paHostApiInfo_get_structVersion(_pyAudio_paHostApiInfo *self,
 					 void *closure) 
 {
   /* sanity check */
-  if ( (!self->apiInfo) ) {
+  if ((!self->apiInfo)) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No HostApi Info available");
     return NULL;
@@ -486,7 +485,7 @@ _pyAudio_paHostApiInfo_get_type(_pyAudio_paHostApiInfo *self,
 				void *closure) 
 {
   /* sanity check */
-  if ( (!self->apiInfo) ) {
+  if ((!self->apiInfo)) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No HostApi Info available");
     return NULL;
@@ -500,7 +499,7 @@ _pyAudio_paHostApiInfo_get_name(_pyAudio_paHostApiInfo *self,
 				void *closure) 
 {
   /* sanity check */
-  if ( (!self->apiInfo) || (self->apiInfo->name == NULL) ) {
+  if ((!self->apiInfo) || (self->apiInfo->name == NULL)) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No HostApi Info available");
     return NULL;
@@ -514,7 +513,7 @@ _pyAudio_paHostApiInfo_get_deviceCount(_pyAudio_paHostApiInfo *self,
 				       void *closure) 
 {
   /* sanity check */
-  if ( (!self->apiInfo) ) {
+  if ((!self->apiInfo)) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No HostApi Info available");
     return NULL;
@@ -528,7 +527,7 @@ _pyAudio_paHostApiInfo_get_defaultInputDevice(_pyAudio_paHostApiInfo *self,
 					      void *closure) 
 {
   /* sanity check */
-  if ( (!self->apiInfo) ) {
+  if ((!self->apiInfo)) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No HostApi Info available");
     return NULL;
@@ -542,7 +541,7 @@ _pyAudio_paHostApiInfo_get_defaultOutputDevice(_pyAudio_paHostApiInfo *self,
 					       void *closure) 
 {
   /* sanity check */
-  if ( (!self->apiInfo) ) {
+  if ((!self->apiInfo)) {
     PyErr_SetString(PyExc_AttributeError, 
 		    "No HostApi Info available");
     return NULL;
@@ -550,7 +549,6 @@ _pyAudio_paHostApiInfo_get_defaultOutputDevice(_pyAudio_paHostApiInfo *self,
       
   return PyInt_FromLong(self->apiInfo->defaultOutputDevice);
 }
-
 
 static int
 _pyAudio_paHostApiInfo_antiset(_pyAudio_paDeviceInfo *self,
@@ -663,9 +661,6 @@ _create_paHostApiInfo_object(void)
   /* don't allow subclassing? */
   obj = (_pyAudio_paHostApiInfo *) PyObject_New(_pyAudio_paHostApiInfo, 
 						&_pyAudio_paHostApiInfoType);
-
-  /* obj = (_pyAudio_paHostApiInfo *) 
-      _pyAudio_paHostApiInfoType.tp_alloc(&_pyAudio_paHostApiInfoType, 0); */
   return obj;
 }
 
@@ -689,15 +684,15 @@ typedef struct {
 typedef _pyAudio_MacOSX_hostApiSpecificStreamInfo _pyAudio_Mac_HASSI;
 
 static void
-_pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(_pyAudio_Mac_HASSI *self) {
-              
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(_pyAudio_Mac_HASSI *self)
+{
   if (self->paMacCoreStreamInfo != NULL) {
-    free( self->paMacCoreStreamInfo );
+    free(self->paMacCoreStreamInfo);
     self->paMacCoreStreamInfo = NULL;
   }
 
   if (self->channelMap != NULL) {
-    free( self->channelMap );
+    free(self->channelMap);
   }
   
   self->flags = paMacCorePlayNice;
@@ -705,16 +700,17 @@ _pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(_pyAudio_Mac_HASSI *self) {
 }
 
 static void
-_pyAudio_MacOSX_hostApiSpecificStreamInfo_dealloc(_pyAudio_Mac_HASSI *self) {
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_dealloc(_pyAudio_Mac_HASSI *self)
+{
   _pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(self);
-  self->ob_type->tp_free( (PyObject *) self );
+  self->ob_type->tp_free((PyObject *) self);
 }
 
 static int
 _pyAudio_MacOSX_hostApiSpecificStreamInfo_init(_pyAudio_Mac_HASSI *self,
 					       PyObject *args,
-					       PyObject *kwargs) {
-
+					       PyObject *kwargs)
+{
   PyObject *channel_map = NULL;
   int flags = paMacCorePlayNice;
 
@@ -796,13 +792,16 @@ _pyAudio_MacOSX_hostApiSpecificStreamInfo_init(_pyAudio_Mac_HASSI *self,
 
 static PyObject *
 _pyAudio_MacOSX_hostApiSpecificStreamInfo_get_flags(_pyAudio_Mac_HASSI *self,
-						    void *closure) {
+						    void *closure)
+{
   return PyInt_FromLong(self->flags);  
 }
 
 static PyObject *
-_pyAudio_MacOSX_hostApiSpecificStreamInfo_get_channel_map(_pyAudio_Mac_HASSI *self,
-							  void *closure) {
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_get_channel_map(
+	        _pyAudio_Mac_HASSI *self,
+		void *closure)
+{
   if (self->channelMap == NULL || self->channelMapSize == 0) {
     Py_INCREF(Py_None);
     return Py_None;
@@ -896,10 +895,7 @@ static PyTypeObject _pyAudio_MacOSX_hostApiSpecificStreamInfoType = {
     0,  /* tp_alloc */
     0,  /* tp_new */
 };
-
 #endif
-
-
 
 
 /*************************************************************
@@ -927,7 +923,7 @@ static void
 _cleanup_Stream_object(_pyAudio_Stream *streamObject)
 {
   if (streamObject->stream != NULL) {
-    Pa_CloseStream( streamObject->stream );
+    Pa_CloseStream(streamObject->stream);
     streamObject->stream = NULL;
   }
 
@@ -935,12 +931,12 @@ _cleanup_Stream_object(_pyAudio_Stream *streamObject)
     streamObject->streamInfo = NULL;
 
   if (streamObject->inputParameters != NULL) {
-    free( streamObject->inputParameters );
+    free(streamObject->inputParameters);
     streamObject->inputParameters = NULL;
   }
 
   if (streamObject->outputParameters != NULL) {
-    free( streamObject->outputParameters );
+    free(streamObject->outputParameters);
     streamObject->outputParameters = NULL;
   }
 
@@ -972,7 +968,7 @@ _pyAudio_Stream_get_structVersion(_pyAudio_Stream *self,
     return NULL;
   }
 
-  if ( (!self->streamInfo) ) {
+  if ((!self->streamInfo)) {
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)",
 				  "No StreamInfo available",
@@ -985,7 +981,7 @@ _pyAudio_Stream_get_structVersion(_pyAudio_Stream *self,
 
 static PyObject *
 _pyAudio_Stream_get_inputLatency(_pyAudio_Stream *self,
-			       void *closure) 
+				 void *closure) 
 {
   /* sanity check */
   if (!_is_open(self)) {
@@ -997,7 +993,7 @@ _pyAudio_Stream_get_inputLatency(_pyAudio_Stream *self,
   }
 
   /* sanity check */
-  if ( (!self->streamInfo) ) {
+  if ((!self->streamInfo)) {
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)",
 				  "No StreamInfo available",
@@ -1010,7 +1006,7 @@ _pyAudio_Stream_get_inputLatency(_pyAudio_Stream *self,
 
 static PyObject *
 _pyAudio_Stream_get_outputLatency(_pyAudio_Stream *self,
-			       void *closure) 
+				  void *closure) 
 {
   /* sanity check */
   if (!_is_open(self)) {
@@ -1022,7 +1018,7 @@ _pyAudio_Stream_get_outputLatency(_pyAudio_Stream *self,
   }
 
   /* sanity check */
-  if ( (!self->streamInfo) ) {
+  if ((!self->streamInfo)) {
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)",
 				  "No StreamInfo available",
@@ -1047,7 +1043,7 @@ _pyAudio_Stream_get_sampleRate(_pyAudio_Stream *self,
   }
  
   /* sanity check */
-  if ( (!self->streamInfo) ) {
+  if ((!self->streamInfo)) {
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)",
 				  "No StreamInfo available",
@@ -1194,9 +1190,9 @@ pa_initialize(PyObject *self, PyObject *args)
   if (err != paNoError) {
     Pa_Terminate();
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", err );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", err);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
 #endif
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)", 				  
@@ -1206,7 +1202,6 @@ pa_initialize(PyObject *self, PyObject *args)
 
   Py_INCREF(Py_None);
   return Py_None;
-
 }
 
 static PyObject *
@@ -1230,16 +1225,18 @@ pa_get_host_api_count(PyObject *self, PyObject *args)
     return NULL;
 
   count = Pa_GetHostApiCount();
+
   if (count < 0) {
+
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", count );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( count ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", count);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(count));
 #endif
+
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)", 
-				  Pa_GetErrorText(count), count) );
-
+				  Pa_GetErrorText(count), count));
     return NULL;
   }
 
@@ -1255,12 +1252,15 @@ pa_get_default_host_api(PyObject *self, PyObject *args)
     return NULL;
 
   index = Pa_GetDefaultHostApi();
+
   if (index < 0) {
+
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", index );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( index ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", index);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(index));
 #endif
+
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)", 				  
 				  Pa_GetErrorText(index), index));
@@ -1282,13 +1282,11 @@ pa_host_api_type_id_to_host_api_index(PyObject *self, PyObject *args)
   index = Pa_HostApiTypeIdToHostApiIndex(typeid);
 
   if (index < 0) {
-    /* if (index != paHostApiNotFound)
-       Pa_Terminate(); */
 
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", index );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( index ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", index);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(index));
 #endif
 
     PyErr_SetObject(PyExc_IOError, 
@@ -1314,19 +1312,15 @@ pa_host_api_device_index_to_device_index(PyObject *self, PyObject *args)
   devIndex = Pa_HostApiDeviceIndexToDeviceIndex(apiIndex, hostApiDeviceindex);
   if (devIndex < 0) {
 
-    /* if (devIndex != paInvalidHostApi && devIndex != paInvalidDevice)
-       Pa_Terminate(); */
-
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", devIndex );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( devIndex ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", devIndex);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(devIndex));
 #endif
 
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)", 				  
 				  Pa_GetErrorText(devIndex), devIndex));
-
     return NULL;
   }
 
@@ -1375,14 +1369,13 @@ pa_get_device_count(PyObject *self, PyObject *args)
 
   count = Pa_GetDeviceCount();
   if (count < 0) {
-    /*
-    Pa_Terminate();
-    */
+
 #ifdef VERBOSE   
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", count );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( count ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", count);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(count));
 #endif
+
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)", 				  
 				  Pa_GetErrorText(count), count));
@@ -1402,17 +1395,16 @@ pa_get_default_input_device(PyObject *self, PyObject *args)
 
   index = Pa_GetDefaultInputDevice();
   if (index == paNoDevice) {    
-    /* fprintf( stderr, "An error occured while using the portaudio stream\n" );
-       fprintf( stderr, "No Default Input Device Available\n" ); */
     PyErr_SetString(PyExc_IOError, "No Default Input Device Available");
     return NULL;
   } else if (index < 0) {
-    /* Pa_Terminate(); */
+
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", index );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( index ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", index);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(index));
 #endif
+
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)", 				  
 				  Pa_GetErrorText(index), index));
@@ -1432,17 +1424,16 @@ pa_get_default_output_device(PyObject *self, PyObject *args)
 
   index = Pa_GetDefaultOutputDevice();
   if (index == paNoDevice) {    
-    /* fprintf( stderr, "An error occured while using the portaudio stream\n" ); */
-    /* fprintf( stderr, "No Default Output Device Available\n" ); */
     PyErr_SetString(PyExc_IOError, "No Default Output Device Available");
     return NULL;
   } else if (index < 0) {
-    /* Pa_Terminate(); */
+
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", index );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( index ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", index);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(index));
 #endif
+
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)", 				  
 				  Pa_GetErrorText(index), index));
@@ -1462,19 +1453,17 @@ pa_get_device_info(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "i", &index))
     return NULL;
   
-  _info = (PaDeviceInfo* )Pa_GetDeviceInfo(index);
+  _info = (PaDeviceInfo *) Pa_GetDeviceInfo(index);
   
   if (!_info) {
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)", 			
 				  "Invalid device info", paInvalidDevice));
-				 
     return NULL;
   }
   
   py_info = _create_paDeviceInfo_object();
-  py_info->devInfo = _info;
-  
+  py_info->devInfo = _info;  
   return (PyObject *) py_info;
 }
 
@@ -1496,8 +1485,10 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
   PaError err;
 
 #ifdef MACOSX
-  _pyAudio_MacOSX_hostApiSpecificStreamInfo *inputHostSpecificStreamInfo = NULL;
-  _pyAudio_MacOSX_hostApiSpecificStreamInfo *outputHostSpecificStreamInfo = NULL;
+  _pyAudio_MacOSX_hostApiSpecificStreamInfo *inputHostSpecificStreamInfo = 
+      NULL;
+  _pyAudio_MacOSX_hostApiSpecificStreamInfo *outputHostSpecificStreamInfo = 
+      NULL;
 #else
   /* mostly ignored...*/
   PyObject *inputHostSpecificStreamInfo = NULL;
@@ -1507,7 +1498,6 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
   /* default to neither output nor input */
   input = 0;
   output = 0;
-
   frames_per_buffer = DEFAULT_FRAMES_PER_BUFFER;
 
   /* pass in rate, channel, width */
@@ -1522,9 +1512,8 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 			   "input_host_api_specific_stream_info",
 			   "output_host_api_specific_stream_info",
 			   NULL};
-			   
   
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs,
 #ifdef MACOSX
 				   "iik|iiOOiO!O!", 
 #else
@@ -1549,8 +1538,8 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 
   
   /* check to see if device indices were specified */
-  if ( (input_device_index_arg == NULL) || 
-       (input_device_index_arg == Py_None)) {    
+  if ((input_device_index_arg == NULL) ||
+      (input_device_index_arg == Py_None)) {    
 
 #ifdef VERBOSE
     printf("Using default input device\n");
@@ -1575,7 +1564,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   if ((output_device_index_arg == NULL) ||
-      (output_device_index_arg == Py_None) ) {    
+      (output_device_index_arg == Py_None)) {    
 
 #ifdef VERBOSE
     printf("Using default output device\n");
@@ -1605,22 +1594,6 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 
-  /* old API */
-/*   if (width == 1) { */
-/*     if (unsigned_8bit)  */
-/*       format = paUInt8; */
-/*     else */
-/*       format = paInt8; */
-/*   } */
-/*   else if (width == 2) */
-/*     format = paInt16; */
-/*   else if (width == 4) */
-/*     format = paFloat32; */
-/*   else { */
-/*     PyErr_SetString(PyExc_ValueError, "Invalid audio width"); */
-/*     return NULL; */
-/*   } */
-
   if (channels < 1) {
     PyErr_SetString(PyExc_ValueError, "Invalid audio channels");
     return NULL;
@@ -1631,7 +1604,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
  
   if (output) {
     outputParameters = 
-      (PaStreamParameters *) malloc( sizeof(PaStreamParameters) ); 
+      (PaStreamParameters *) malloc(sizeof(PaStreamParameters)); 
 
 
     if (output_device_index < 0)
@@ -1645,16 +1618,16 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
       free(outputParameters);
       PyErr_SetObject(PyExc_IOError, 
 		      Py_BuildValue("(s,i)", 				  
-				    "Invalid output device (no default output device)", 
+				    "Invalid output device "
+				    "(no default output device)", 
 				    paInvalidDevice));
-
       return NULL;
     }
 
     outputParameters->channelCount = channels;
     outputParameters->sampleFormat = format;
     outputParameters->suggestedLatency = 
-      Pa_GetDeviceInfo( outputParameters->device )->defaultLowOutputLatency;
+      Pa_GetDeviceInfo(outputParameters->device)->defaultLowOutputLatency;
     outputParameters->hostApiSpecificStreamInfo = NULL;
 
 #ifdef MACOSX
@@ -1668,20 +1641,22 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 
   if (input) {
     inputParameters = 
-      (PaStreamParameters *) malloc( sizeof(PaStreamParameters) ); 
+      (PaStreamParameters *) malloc(sizeof(PaStreamParameters)); 
 
-    if (input_device_index < 0)
+    if (input_device_index < 0) {
       /* default output device */
-      inputParameters->device = Pa_GetDefaultInputDevice(); 
-    else
+      inputParameters->device = Pa_GetDefaultInputDevice();
+    } else {
       inputParameters->device = input_device_index;
+    }
 
     /* final check -- ensure that there is a default device */
     if (inputParameters->device < 0) {
       free(inputParameters);
       PyErr_SetObject(PyExc_IOError, 
 		      Py_BuildValue("(s,i)", 				  
-				    "Invalid input device (no default output device)", 
+				    "Invalid input device "
+				    "(no default output device)", 
 				    paInvalidDevice));
       return NULL;
     }
@@ -1689,7 +1664,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
     inputParameters->channelCount = channels;
     inputParameters->sampleFormat = format;
     inputParameters->suggestedLatency = 
-      Pa_GetDeviceInfo( inputParameters->device )->defaultLowInputLatency;
+      Pa_GetDeviceInfo(inputParameters->device)->defaultLowInputLatency;
     inputParameters->hostApiSpecificStreamInfo = NULL;
 
 #ifdef MACOSX
@@ -1698,6 +1673,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 	inputHostSpecificStreamInfo->paMacCoreStreamInfo;
     }
 #endif
+
   }
 
   PaStream *stream = NULL;
@@ -1718,15 +1694,14 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 		      /* no callback, use blocking API */
 		      NULL,   
 		      /* no callback, so no callback userData */
-		      NULL ); 
+		      NULL); 
 
-  if( err != paNoError ) {
-    /* Pa_Terminate(); */
+  if (err != paNoError) {
 
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", err );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", err);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
 #endif
 
     PyErr_SetObject(PyExc_IOError, 
@@ -1758,7 +1733,6 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pa_close(PyObject *self, PyObject *args)
 {
-  
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
   
@@ -1766,7 +1740,7 @@ pa_close(PyObject *self, PyObject *args)
     return NULL;
 
   streamObject = (_pyAudio_Stream *) stream_arg;
-  
+
   _cleanup_Stream_object(streamObject);
 
   Py_INCREF(Py_None);
@@ -1801,14 +1775,16 @@ pa_is_format_supported(PyObject *self, PyObject *args,
 		       PyObject *kwargs)
 {
   /* pass in rate, channel, width */
-  static char *kwlist[] = {"sample_rate",
-			   "input_device",
-			   "input_channels",
-			   "input_format",
-			   "output_device",
-			   "output_channels",
-			   "output_format",
-			   NULL};
+  static char *kwlist[] = {
+      "sample_rate",
+      "input_device",
+      "input_channels",
+      "input_format",
+      "output_device",
+      "output_channels",
+      "output_format",
+      NULL
+  };
 			   
   int input_device, input_channels;
   int output_device, output_channels;
@@ -1831,7 +1807,6 @@ pa_is_format_supported(PyObject *self, PyObject *args,
 				   &output_device,
 				   &output_channels,
 				   &output_format))
-    
     return NULL;
 
   if (!(input_device < 0)) {
@@ -1864,7 +1839,6 @@ pa_is_format_supported(PyObject *self, PyObject *args,
 				  error));
     return NULL;
   }
-
 }
 
 /*************************************************************
@@ -1874,12 +1848,13 @@ pa_is_format_supported(PyObject *self, PyObject *args,
 static PyObject *
 pa_start_stream(PyObject *self, PyObject *args)
 {
-
   int err;
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
+
   if (!PyArg_ParseTuple(args, "O!", &_pyAudio_StreamType, &stream_arg))
     return NULL;
+
   streamObject = (_pyAudio_Stream *) stream_arg;
   
   if (!_is_open(streamObject)) {
@@ -1892,14 +1867,14 @@ pa_start_stream(PyObject *self, PyObject *args)
 
   PaStream *stream = streamObject->stream;
 
-  if ( ((err = Pa_StartStream( stream )) != paNoError) &&
-       (err != paStreamIsNotStopped) ) {    
+  if ( ((err = Pa_StartStream(stream)) != paNoError) &&
+       (err != paStreamIsNotStopped)) {    
     _cleanup_Stream_object(streamObject);
-    /* Pa_Terminate(); */
+
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", err );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", err);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
 #endif
 
     PyErr_SetObject(PyExc_IOError, 
@@ -1911,7 +1886,6 @@ pa_start_stream(PyObject *self, PyObject *args)
   
   Py_INCREF(Py_None);
   return Py_None;
-
 }
 
 static PyObject *
@@ -1921,8 +1895,10 @@ pa_stop_stream(PyObject *self, PyObject *args)
   int err;
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
+
   if (!PyArg_ParseTuple(args, "O!", &_pyAudio_StreamType, &stream_arg))
     return NULL;
+
   streamObject = (_pyAudio_Stream *) stream_arg;
     
   if (!_is_open(streamObject)) {
@@ -1932,15 +1908,15 @@ pa_stop_stream(PyObject *self, PyObject *args)
 
   PaStream *stream = streamObject->stream;
 
-  if ( ((err = Pa_StopStream( stream )) != paNoError)  &&
-       (err != paStreamIsStopped) ) {
+  if ( ((err = Pa_StopStream(stream)) != paNoError)  &&
+       (err != paStreamIsStopped)) {
     
     _cleanup_Stream_object(streamObject);
-    /* Pa_Terminate(); */
+
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", err );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", err);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
 #endif
 
     PyErr_SetObject(PyExc_IOError, 
@@ -1952,18 +1928,18 @@ pa_stop_stream(PyObject *self, PyObject *args)
 
   Py_INCREF(Py_None);
   return Py_None;
-
 }
 
 static PyObject *
 pa_abort_stream(PyObject *self, PyObject *args)
 {
-
   int err;
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
+
   if (!PyArg_ParseTuple(args, "O!", &_pyAudio_StreamType, &stream_arg))
     return NULL;
+
   streamObject = (_pyAudio_Stream *) stream_arg;
     
   if (!_is_open(streamObject)) {
@@ -1973,15 +1949,14 @@ pa_abort_stream(PyObject *self, PyObject *args)
 
   PaStream *stream = streamObject->stream;
 
-  if ( ((err = Pa_AbortStream( stream )) != paNoError) &&
-       (err != paStreamIsStopped) ) {
+  if ( ((err = Pa_AbortStream(stream)) != paNoError) &&
+       (err != paStreamIsStopped)) {
     _cleanup_Stream_object(streamObject);
-    /* Pa_Terminate(); */
 
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", err );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", err);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
 #endif
 
     PyErr_SetObject(PyExc_IOError, 
@@ -1990,7 +1965,6 @@ pa_abort_stream(PyObject *self, PyObject *args)
 				  err));
     return NULL;
   }
-
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -1999,12 +1973,13 @@ pa_abort_stream(PyObject *self, PyObject *args)
 static PyObject *
 pa_is_stream_stopped(PyObject *self, PyObject *args)
 {
-
   int err;
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
+
   if (!PyArg_ParseTuple(args, "O!", &_pyAudio_StreamType, &stream_arg))
     return NULL;
+
   streamObject = (_pyAudio_Stream *) stream_arg;
     
   if (!_is_open(streamObject)) {
@@ -2017,14 +1992,13 @@ pa_is_stream_stopped(PyObject *self, PyObject *args)
 
   PaStream *stream = streamObject->stream;
 
-  if ((err = Pa_IsStreamStopped( stream )) < 0) {
+  if ((err = Pa_IsStreamStopped(stream)) < 0) {
     _cleanup_Stream_object(streamObject);
-    /* Pa_Terminate(); */
 
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", err );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", err);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
 #endif
 
     PyErr_SetObject(PyExc_IOError, 
@@ -2050,8 +2024,10 @@ pa_is_stream_active(PyObject *self, PyObject *args)
   int err;
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
+
   if (!PyArg_ParseTuple(args, "O!", &_pyAudio_StreamType, &stream_arg))
     return NULL;
+
   streamObject = (_pyAudio_Stream *) stream_arg;
     
   if (!_is_open(streamObject)) {
@@ -2061,20 +2037,19 @@ pa_is_stream_active(PyObject *self, PyObject *args)
 
   PaStream *stream = streamObject->stream;
 
-  if ((err = Pa_IsStreamActive( stream )) < 0) {
+  if ((err = Pa_IsStreamActive(stream)) < 0) {
     _cleanup_Stream_object(streamObject);
-    /* Pa_Terminate(); */
+
 #ifdef VERBOSE
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
-    fprintf( stderr, "Error number: %d\n", err );
-    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", err);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
 #endif 
 
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)",
 				  Pa_GetErrorText(err),
 				  err));
-
     return NULL;
   }
 
@@ -2090,12 +2065,13 @@ pa_is_stream_active(PyObject *self, PyObject *args)
 static PyObject *
 pa_get_stream_time(PyObject *self, PyObject *args)
 {
-
   double time;
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
+
   if (!PyArg_ParseTuple(args, "O!", &_pyAudio_StreamType, &stream_arg))
     return NULL;
+
   streamObject = (_pyAudio_Stream *) stream_arg;
     
   if (!_is_open(streamObject)) {
@@ -2108,7 +2084,7 @@ pa_get_stream_time(PyObject *self, PyObject *args)
 
   PaStream *stream = streamObject->stream;
 
-  if ((time = Pa_GetStreamTime( stream )) == 0) {
+  if ((time = Pa_GetStreamTime(stream)) == 0) {
     _cleanup_Stream_object(streamObject);
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)",
@@ -2118,17 +2094,17 @@ pa_get_stream_time(PyObject *self, PyObject *args)
   }
 
   return PyFloat_FromDouble(time);
-
 }
 
 static PyObject *
 pa_get_stream_cpu_load(PyObject *self, PyObject *args)
 {
-
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
+
   if (!PyArg_ParseTuple(args, "O!", &_pyAudio_StreamType, &stream_arg))
     return NULL;
+
   streamObject = (_pyAudio_Stream *) stream_arg;
     
   if (!_is_open(streamObject)) {
@@ -2140,9 +2116,7 @@ pa_get_stream_cpu_load(PyObject *self, PyObject *args)
   }
 
   PaStream *stream = streamObject->stream;
-
   return PyFloat_FromDouble(Pa_GetStreamCpuLoad(stream));
-
 }
 
 
@@ -2162,8 +2136,12 @@ pa_write_stream(PyObject *self, PyObject *args)
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
 
-  if (!PyArg_ParseTuple(args, "O!s#i|i", &_pyAudio_StreamType, &stream_arg, 
-			&data, &total_size, &total_frames, 
+  if (!PyArg_ParseTuple(args, "O!s#i|i",
+			&_pyAudio_StreamType,
+			&stream_arg, 
+			&data,
+			&total_size,
+			&total_frames, 
 			&should_throw_exception))
     return NULL;
 
@@ -2204,12 +2182,13 @@ pa_write_stream(PyObject *self, PyObject *args)
  error:
   /* cleanup */
   _cleanup_Stream_object(streamObject);
-  /* Pa_Terminate(); */
+
 #ifdef VERBOSE
-  fprintf( stderr, "An error occured while using the portaudio stream\n" );
-  fprintf( stderr, "Error number: %d\n", err );
-  fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+  fprintf(stderr, "An error occured while using the portaudio stream\n");
+  fprintf(stderr, "Error number: %d\n", err);
+  fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
 #endif
+
   PyErr_SetObject(PyExc_IOError, 
 		  Py_BuildValue("(s,i)",
 				Pa_GetErrorText(err),
@@ -2229,7 +2208,9 @@ pa_read_stream(PyObject *self, PyObject *args)
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
 
-  if (!PyArg_ParseTuple(args, "O!i", &_pyAudio_StreamType, &stream_arg, 
+  if (!PyArg_ParseTuple(args, "O!i",
+			&_pyAudio_StreamType,
+			&stream_arg, 
 			&total_frames))
     return NULL;
 
@@ -2274,18 +2255,21 @@ pa_read_stream(PyObject *self, PyObject *args)
   Py_END_ALLOW_THREADS
 
   if (err != paNoError) {
+
     /* ignore input overflow and output underflow */
-    if( err & paInputOverflowed ) {
+    if (err & paInputOverflowed) {
+
 #ifdef VERBOSE     
-      fprintf( stderr, "Input Overflow.\n" );
+      fprintf(stderr, "Input Overflow.\n");
 #endif
-    }
-    else if( err & paOutputUnderflowed ) {
+
+    } else if (err & paOutputUnderflowed) {
+
 #ifdef VERBOSE
-      fprintf( stderr, "Output Underflow.\n" );
+      fprintf(stderr, "Output Underflow.\n");
 #endif
-    }
-    else {
+
+    } else {
       /* clean up */
       _cleanup_Stream_object(streamObject);
     }
@@ -2296,7 +2280,6 @@ pa_read_stream(PyObject *self, PyObject *args)
     PyErr_SetObject(PyExc_IOError, 
 		    Py_BuildValue("(s,i)", 				  
 				  Pa_GetErrorText(err), err));
-      
     return NULL;
   }
 
@@ -2309,8 +2292,10 @@ pa_get_stream_write_available(PyObject *self, PyObject *args)
   signed long frames;
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
+
   if (!PyArg_ParseTuple(args, "O!", &_pyAudio_StreamType, &stream_arg))
     return NULL;
+
   streamObject = (_pyAudio_Stream *) stream_arg;
 
   if (!_is_open(streamObject)) {
@@ -2322,9 +2307,7 @@ pa_get_stream_write_available(PyObject *self, PyObject *args)
   }
 
   PaStream *stream = streamObject->stream;
-
   frames = Pa_GetStreamWriteAvailable(stream);
-  
   return PyInt_FromLong(frames);  
 }
 
@@ -2334,8 +2317,10 @@ pa_get_stream_read_available(PyObject *self, PyObject *args)
   signed long frames;
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
+
   if (!PyArg_ParseTuple(args, "O!", &_pyAudio_StreamType, &stream_arg))
     return NULL;
+
   streamObject = (_pyAudio_Stream *) stream_arg;
 
   if (!_is_open(streamObject)) {
@@ -2347,7 +2332,6 @@ pa_get_stream_read_available(PyObject *self, PyObject *args)
   }
 
   PaStream *stream = streamObject->stream;
-
   frames = Pa_GetStreamReadAvailable(stream);
   return PyInt_FromLong(frames);  
 }
@@ -2391,7 +2375,8 @@ init_portaudio(void)
 #ifdef MACOSX
   Py_INCREF(&_pyAudio_MacOSX_hostApiSpecificStreamInfoType);
   PyModule_AddObject(m, "paMacCoreStreamInfo", 
-		     (PyObject *)&_pyAudio_MacOSX_hostApiSpecificStreamInfoType);
+		     (PyObject *)
+		     &_pyAudio_MacOSX_hostApiSpecificStreamInfoType);
 #endif
 
   /* Add PortAudio constants */
@@ -2489,4 +2474,3 @@ init_portaudio(void)
 			  paMacCoreMinimizeCPU);
 #endif
 }
-

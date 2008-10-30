@@ -26,6 +26,7 @@
  * SOFTWARE.
  */
 
+#include <stdio.h>
 #include "Python.h"
 #include "portaudio.h"
 #include "_portaudiomodule.h"

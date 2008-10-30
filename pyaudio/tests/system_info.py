@@ -55,37 +55,41 @@ for i in range(max_devs):
     for f in standard_sample_rates:
 
         if devinfo['maxInputChannels'] > 0:
-            if p.is_format_supported(f,
-                                     input_device =
-                                     devinfo['index'],
-                                     input_channels =
-                                     devinfo['maxInputChannels'],
-                                     input_format = pyaudio.paInt16):
-                input_supported_rates.append(f)
+            try:
+                if p.is_format_supported(
+                    f,
+                    input_device = devinfo['index'],
+                    input_channels = devinfo['maxInputChannels'],
+                    input_format = pyaudio.paInt16):
+                    input_supported_rates.append(f)
+            except ValueError:
+                pass
 
         if devinfo['maxOutputChannels'] > 0:
-            if p.is_format_supported(f,
-                                     output_device =
-                                     devinfo['index'],
-                                     output_channels =
-                                     devinfo['maxOutputChannels'],
-                                     output_format = pyaudio.paInt16):
-                output_supported_rates.append(f)
+            try:
+                if p.is_format_supported(
+                    f,
+                    output_device = devinfo['index'],
+                    output_channels = devinfo['maxOutputChannels'],
+                    output_format = pyaudio.paInt16):
+                    output_supported_rates.append(f)
+            except ValueError:
+                pass
 
         if (devinfo['maxInputChannels'] > 0) and \
            (devinfo['maxOutputChannels'] > 0):
-            if p.is_format_supported(f,
-                                     input_device =
-                                     devinfo['index'],
-                                     input_channels =
-                                     devinfo['maxInputChannels'],
-                                     input_format = pyaudio.paInt16,
-                                     output_device =
-                                     devinfo['index'],
-                                     output_channels =
-                                     devinfo['maxOutputChannels'],
-                                     output_format = pyaudio.paInt16):
-                full_duplex_rates.append(f)
+            try:
+                if p.is_format_supported(
+                    f,
+                    input_device = devinfo['index'],
+                    input_channels = devinfo['maxInputChannels'],
+                    input_format = pyaudio.paInt16,
+                    output_device = devinfo['index'],
+                    output_channels = devinfo['maxOutputChannels'],
+                    output_format = pyaudio.paInt16):
+                    full_duplex_rates.append(f)
+            except ValueError:
+                pass
 
     if len(input_supported_rates):
         print "\tInput rates:", input_supported_rates

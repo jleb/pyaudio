@@ -1858,9 +1858,6 @@ pa_is_format_supported(PyObject *self, PyObject *args,
   if (error == paFormatIsSupported) {
     Py_INCREF(Py_True);
     return Py_True;
-  } else if (error == paInvalidSampleRate) {
-    Py_INCREF(Py_False);
-    return Py_False;
   } else {
     PyErr_SetObject(PyExc_ValueError, 
 		    Py_BuildValue("(s,i)",

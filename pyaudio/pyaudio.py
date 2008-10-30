@@ -876,8 +876,8 @@ class PyAudio:
                             output_format = None):
         """
         Check to see if specified device configuration
-        is supported.
-
+        is supported. Returns True if the configuration
+        is supported; throws a ValueError exception otherwise.
         
         :param `rate`:
            Specifies the desired rate (in Hz)
@@ -900,7 +900,8 @@ class PyAudio:
            PortAudio sample format constant (`PaSampleFormat`). 
 
         :rtype: bool
-        :raises ValueError: PortAudio error or invalid devices.
+        :raises ValueError: tuple containing:
+           (error string, PortAudio error code `PaErrorCode`).
         
         """
 

@@ -1,5 +1,5 @@
 ======================================================================
-PyAudio v0.2.0 Compilation Hints
+PyAudio v0.2.3 Compilation Hints
 ======================================================================
 
 Here are some hints for compiling PortAudio and PyAudio on various
@@ -54,9 +54,9 @@ I'd love to hear about it.)
 2. Untar PyAudio in the same (parent) directory that contains your
    PortAudio directory. For example, if your PortAudio v19 directory
    is ~/portaudio-v19/, then the PyAudio source should be in
-   ~/pyaudio-0.2.0/
+   ~/pyaudio-0.2.3/
 
-3. To build PyAudio, from inside the pyaudio-0.2.0/ directory, run:
+3. To build PyAudio, from inside the pyaudio-0.2.3/ directory, run:
 
      % python setup.py build --static-link -cmingw32
 

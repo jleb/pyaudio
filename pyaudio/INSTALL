@@ -65,6 +65,24 @@ I'd love to hear about it.)
    library to the PyAudio module, which is probably the best way to go
    on Windows.
 
+   From: http://boodebr.org/main/python/build-windows-extensions
+
+     Update: 2008-09-10
+
+     Recent versions of Cygwin binutils have version numbers that are
+     breaking the version number parsing, resulting in errors like:
+     ValueError: invalid version number '2.18.50.20080625'
+
+     To fix this, edit distutils/version.py. At line 100, replace:
+
+       version_re = re.compile(r'^(\d+) \. (\d+) (\. (\d+))? ([ab](\d+))?$',
+                               re.VERBOSE)
+
+     with
+
+       version_re = re.compile(r'^(\d+) \. (\d+) (\. (\d+))? (\. (\d+))?$',
+                               re.VERBOSE)
+
 4. To install PyAudio:
 
      % python setup.py install --skip-build

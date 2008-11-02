@@ -1,5 +1,5 @@
 """
-PyAudio v0.2.0: Python Bindings for PortAudio.
+PyAudio v0.2.3: Python Bindings for PortAudio.
 
 Copyright (c) 2006-2008 Hubert Pham
 
@@ -30,6 +30,7 @@ from distutils.core import setup, Extension
 import sys
 
 __revision__ = "$Revision: 14 $"
+__version__ = "0.2.3"
 
 # Note: distutils will try to locate and link dynamically
 #       against portaudio.
@@ -55,6 +56,7 @@ pyaudio_module_sources = ['_portaudiomodule.c']
 
 include_dirs = []
 external_libraries = []
+extra_compile_args = ['-fno-strict-aliasing']
 extra_link_args = []
 scripts = []
 defines = []
@@ -108,10 +110,11 @@ pyaudio = Extension('_portaudio',
                     include_dirs = include_dirs,
                     define_macros = defines,
                     libraries = external_libraries,
+                    extra_compile_args = extra_compile_args,
                     extra_link_args = extra_link_args)
                
 setup (name = 'PyAudio',
-       version = '0.2.0',
+       version = __version__,
        author = "Hubert Pham",
        url = "http://people.csail.mit.edu/hubert/pyaudio/",
        description = 'PortAudio Python Bindings',

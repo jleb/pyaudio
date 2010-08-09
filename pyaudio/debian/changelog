@@ -1,6 +1,17 @@
+python-pyaudio (0.2.3) unstable; urgency=low
+
+  * Release the GIL during blocking PortAudio I/O calls.
+
+  * Fixed Python argument parsing to use a long for PaSampleFormat.
+
+  * pyaudio.PyAudio.is_format_supported() now throws a ValueError
+    exception if the specified format is not supported for any reason
+    (or returns True if the format is supported).
+
+ -- Hubert Pham <hubert@mit.edu>  Thu, 30 Oct 2008 17:00:00 -0500
+
 python-pyaudio (0.2.0) unstable; urgency=low
 
   * Initial version
 
  -- Justin Mazzola Paluska <jmp@mit.edu>  Fri, 08 Feb 2008 13:47:27 -0500
-

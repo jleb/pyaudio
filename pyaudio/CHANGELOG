@@ -1,0 +1,35 @@
+2008-10-29  Hubert Pham  <hubert@mit.edu>
+
+  PyAudio 0.2.3
+
+  - Release the GIL during blocking PortAudio I/O calls.
+
+  - Fixed Python argument parsing to use a long for PaSampleFormat
+    (rather than int).
+
+    Thanks to many who have pointed out these two issues and sent
+    patches.
+
+  - pyaudio.PyAudio.is_format_supported() now throws a ValueError
+    exception if the specified format is not supported for any reason
+    (or returns True if the format is supported).
+
+    Prior, the method would return False if and only if the specified
+    sample rate was unsupported. is_format_supported() now will always
+    return True or throw an exception.
+
+
+2008-03-06  Hubert Pham <hubert@mit.edu>
+
+  PyAudio 0.2.0
+
+  - Added PaMacCoreStreamInfo for Mac OS X Host API Specific Stream Info
+    (e.g., for channel maps).
+
+  - Added packaging files for building binaries.
+
+
+2008-02-12  Justin Mazzola Paluska  <jmp@mit.edu>
+
+  - Initial version of debian packaging.
+

@@ -85,13 +85,11 @@
 :sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode
 :sort: PortAudio Constants, PaSampleFormat Values,
        PaHostApiTypeId Values, PaErrorCode Values
-:sort: __revision__
                         
 """
 
 __author__ = "Hubert Pham"
-__version__ = "0.2.0"
-__revision__ = "$Revision: 6 $"
+__version__ = "0.2.3"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -876,8 +874,8 @@ class PyAudio:
                             output_format = None):
         """
         Check to see if specified device configuration
-        is supported.
-
+        is supported. Returns True if the configuration
+        is supported; throws a ValueError exception otherwise.
         
         :param `rate`:
            Specifies the desired rate (in Hz)
@@ -900,7 +898,8 @@ class PyAudio:
            PortAudio sample format constant (`PaSampleFormat`). 
 
         :rtype: bool
-        :raises ValueError: PortAudio error or invalid devices.
+        :raises ValueError: tuple containing:
+           (error string, PortAudio error code `PaErrorCode`).
         
         """
 

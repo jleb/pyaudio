@@ -1,0 +1,100 @@
+# This is the PyAudio distribution makefile. You probably
+# don't care about this unless you're interested in making
+# PyAudio binary packages for various platforms.
+
+.PHONY: pyaudio_lib docs
+
+# documentation
+EPYDOC=epydoc
+DOCS_OUTPUT=docs/
+DOC_NAME=PyAudio-0.2.0
+DOC_URL=http://people.csail.mit.edu/hubert/pyaudio/
+
+SYSTEM_PYTHON25_DIR=/System/Library/Frameworks/Python.framework/Versions/2.5/bin
+MAC_PYTHON25_DIR=/Library/Frameworks/Python.framework/Versions/2.5/bin
+MAC_PYTHON24_DIR=/Library/Frameworks/Python.framework/Versions/2.4/bin
+
+SYSTEM_PYTHON25_BDIST=/usr/local/bin/bdist_mpkg
+MAC_PYTHON25_BDIST=$(MAC_PYTHON25_DIR)/bdist_mpkg
+MAC_PYTHON24_BDIST=$(MAC_PYTHON24_DIR)/bdist_mpkg
+
+PYTHON25_PKG="dist/PyAudio-0.2.0-py2.5-macosx10.5.mpkg"
+SYS_PYTHON25_PKG="dist/PyAudio-0.2.0-sys-py2.5-macosx10.5.mpkg"
+MAC_PYTHON25_PKG="dist/PyAudio-0.2.0-mac-py2.5-macosx10.5.mpkg"
+MAC_PYTHON24_PKG="dist/PyAudio-0.2.0-py2.4-macosx10.5.mpkg"
+
+INPUT="dist/pyaudio-0.2.0.mpkg"
+
+PACKAGEMAKER="/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"
+PACKAGEDOC="packaging/pyaudio-0.2.0-mpkg.pmdoc"
+
+VERSION=0.2.0
+DIST=dist
+PACKAGING=packaging
+VOLNAME_FILENAME=pyaudio-$(VERSION)
+VOLNAME=PyAudio\ $(VERSION)
+DS_STORE=DS_Store
+# add 20480 sectors (~10MB) for safety; we'll shrink it later
+SECTORS=`du -s $(INPUT) | awk '{print $$1 + 20480}'`
+HDIUTIL=hdiutil
+MAC_SNAKEY=snakey.tif
+
+what: 
+	@echo "make targets:"
+	@echo
+	@echo " win32      : windows installer"
+	@echo " macosx     : mac os x installer"
+	@echo " deb        : debian package"
+	@echo " docs       : documentation"
+macosx: 
+	rm -rf $(SYS_PYTHON25_PKG) $(MAC_PYTHON25_PKG) $(MAC_PYTHON24_PKG)
+
+	@echo "Building System Python 2.5 Package"
+	$(SYSTEM_PYTHON25_DIR)/python setup.py build --static-link	
+	$(SYSTEM_PYTHON25_BDIST)
+	mv $(PYTHON25_PKG) $(SYS_PYTHON25_PKG)
+
+	@echo "Building MacPython 2.5 Package"
+	$(MAC_PYTHON25_DIR)/python setup.py build --static-link	
+	$(MAC_PYTHON25_BDIST)
+	mv $(PYTHON25_PKG) $(MAC_PYTHON25_PKG)
+
+	@echo "Building MacPython 2.4 Package"
+	$(MAC_PYTHON24_DIR)/python setup.py build --static-link	
+	$(MAC_PYTHON24_BDIST)
+
+	@echo "Making Meta Package"
+	$(PACKAGEMAKER) --doc $(PACKAGEDOC) --out $(INPUT)
+
+	rm -f $(DIST)/$(VOLNAME_FILENAME).dmg
+
+	@echo "Creating a DMG with $(SECTORS) sectors"
+	
+	$(HDIUTIL) create -sectors $(SECTORS) -fs HFS+ -volname $(VOLNAME) $(DIST)/$(VOLNAME_FILENAME).dmg
+	$(HDIUTIL) attach $(DIST)/$(VOLNAME_FILENAME).dmg
+	@echo "Copying Data"
+	mkdir /Volumes/$(VOLNAME)/.packaging
+	cp $(PACKAGING)/$(DS_STORE) /Volumes/$(VOLNAME)/.$(DS_STORE)
+	cp $(PACKAGING)/$(MAC_SNAKEY) /Volumes/$(VOLNAME)/.packaging/$(MAC_SNAKEY)
+	cp -r $(INPUT) /Volumes/$(VOLNAME)/Install\ PyAudio.mpkg
+	SetFile -a E /Volumes/$(VOLNAME)/Install\ PyAudio.mpkg
+	@echo "Done Copying"
+	$(HDIUTIL) detach /Volumes/$(VOLNAME)
+	@echo "Resizing DMG"
+	$(HDIUTIL) resize -sectors `$(HDIUTIL) resize $(DIST)/$(VOLNAME_FILENAME).dmg | awk '{print $$1}'` $(DIST)/$(VOLNAME_FILENAME).dmg
+	@echo "Compressing DMG"
+	$(HDIUTIL) convert -imagekey zlib-level=9 -format UDZO $(DIST)/$(VOLNAME_FILENAME).dmg -o $(DIST)/$(VOLNAME_FILENAME).tmp.dmg
+	mv $(DIST)/$(VOLNAME_FILENAME).tmp.dmg $(DIST)/$(VOLNAME_FILENAME).dmg
+
+win32:
+	python2 setup.py build -cmingw32 --static-link
+	python2 setup.py bdist_wininst --skip-build -t PyAudio \
+	--bitmap=$(PACKAGING)/win-background.bmp \
+#	--install-script=postinst.py \
+
+deb:
+	debuild -uc -us
+
+docs:
+	$(EPYDOC) -v -o $(DOCS_OUTPUT) --name $(DOC_NAME) --url $(DOC_URL) \
+	--no-private pyaudio.py

@@ -1,6 +1,6 @@
-# pyAudio : Python Bindings for PortAudio.
+# PyAudio : Python Bindings for PortAudio.
 
-# Copyright (c) 2006 Hubert Pham
+# Copyright (c) 2006-2008 Hubert Pham
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -22,7 +22,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-""" pyAudio : Python Bindings for PortAudio v19.
+""" PyAudio : Python Bindings for PortAudio v19.
 
 **These bindings only support PortAudio blocking mode.**
 
@@ -85,12 +85,12 @@
 :sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode
 :sort: PortAudio Constants, PaSampleFormat Values,
        PaHostApiTypeId Values, PaErrorCode Values
-:sort: __author__, __version__, __revision__
+:sort: __revision__
                         
 """
 
 __author__ = "Hubert Pham"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __revision__ = "$Revision: 6 $"
 __docformat__ = "restructuredtext en"
 
@@ -311,7 +311,9 @@ class Stream:
                  input_device_index = None,
                  output_device_index = None,
                  frames_per_buffer = 1024,
-                 start = True):
+                 start = True,
+                 input_host_api_specific_stream_info = None,
+                 output_host_api_specific_stream_info = None):
         """
         Initialize a stream; this should be called by
         `PyAudio.open`. A stream can either be input, output, or both.
@@ -336,6 +338,12 @@ class Stream:
         :param `start`: Start the stream running immediately.
             Defaults to True. In general, there is no reason to set
             this to false.
+        :param `input_host_api_specific_stream_info`: Specifies a host API
+            specific stream information data structure for input.
+            See `PaMacCoreStreamInfo`.
+        :param `output_host_api_specific_stream_info`: Specifies a host API
+            specific stream information data structure for output.
+            See `PaMacCoreStreamInfo`.
              
         :raise ValueError: Neither input nor output
          are set True.
@@ -364,15 +372,30 @@ class Stream:
         self._format = format
         self._frames_per_buffer = frames_per_buffer
 
+        arguments = {
+            'rate' : rate,
+            'channels' : channels,
+            'format' : format,
+            'input' : input,
+            'output' : output,
+            'input_device_index' : input_device_index,
+            'output_device_index' : output_device_index,
+            'frames_per_buffer' : frames_per_buffer}
+
+        if input_host_api_specific_stream_info:
+            _l = input_host_api_specific_stream_info
+            arguments[
+                'input_host_api_specific_stream_info'
+                ] = _l._get_host_api_stream_object()
+
+        if output_host_api_specific_stream_info:
+            _l = output_host_api_specific_stream_info
+            arguments[
+                'output_host_api_specific_stream_info'
+                ] = _l._get_host_api_stream_object()
+                                                             
         # calling pa.open returns a stream object
-        self._stream = pa.open(rate = rate,
-                               channels = channels,
-                               format = format,
-                               input = input,
-                               output = output,
-                               input_device_index = input_device_index,
-                               output_device_index = output_device_index,
-                               frames_per_buffer = frames_per_buffer)
+        self._stream = pa.open(**arguments)
 
         self._input_latency = self._stream.inputLatency
         self._output_latency = self._stream.outputLatency
@@ -969,3 +992,92 @@ class PyAudio:
                 'defaultSampleRate' :
                 device_info.defaultSampleRate
                 }
+
+######################################################################
+# Host Specific Stream Info
+######################################################################
+
+try:
+    paMacCoreStreamInfo = pa.paMacCoreStreamInfo
+except AttributeError:
+    pass
+else:
+    class PaMacCoreStreamInfo:
+
+        """
+        Mac OS X-only: PaMacCoreStreamInfo is a PortAudio Host API
+        Specific Stream Info data structure for specifying Mac OS
+        X-only settings. Instantiate this class (if desired) and pass
+        the instance as the argument in `PyAudio.open` to parameters
+        ``input_host_api_specific_stream_info`` or
+        ``output_host_api_specific_stream_info``. (See `Stream.__init__`.)
+
+        :note: Mac OS X only.
+
+        :group Flags (constants):
+          paMacCoreChangeDeviceParameters, paMacCoreFailIfConversionRequired,
+          paMacCoreConversionQualityMin, paMacCoreConversionQualityMedium,
+          paMacCoreConversionQualityLow, paMacCoreConversionQualityHigh,
+          paMacCoreConversionQualityMax, paMacCorePlayNice,
+          paMacCorePro, paMacCoreMinimizeCPUButPlayNice, paMacCoreMinimizeCPU
+
+        :group Settings:
+          get_flags, get_channel_map
+          
+        """
+        paMacCoreChangeDeviceParameters = pa.paMacCoreChangeDeviceParameters
+        paMacCoreFailIfConversionRequired = pa.paMacCoreFailIfConversionRequired
+        paMacCoreConversionQualityMin = pa.paMacCoreConversionQualityMin
+        paMacCoreConversionQualityMedium = pa.paMacCoreConversionQualityMedium
+        paMacCoreConversionQualityLow = pa.paMacCoreConversionQualityLow
+        paMacCoreConversionQualityHigh = pa.paMacCoreConversionQualityHigh
+        paMacCoreConversionQualityMax = pa.paMacCoreConversionQualityMax
+        paMacCorePlayNice = pa.paMacCorePlayNice
+        paMacCorePro = pa.paMacCorePro
+        paMacCoreMinimizeCPUButPlayNice = pa.paMacCoreMinimizeCPUButPlayNice
+        paMacCoreMinimizeCPU = pa.paMacCoreMinimizeCPU
+
+        def __init__(self, flags = None, channel_map = None):
+            """
+            Initialize with flags and channel_map. See PortAudio
+            documentation for more details on these parameters; they are
+            passed almost verbatim to the PortAudio library.
+
+            :param `flags`: paMacCore* flags OR'ed together.
+                See `PaMacCoreStreamInfo`.
+            :param `channel_map`: An array describing the channel mapping.
+                See PortAudio documentation for usage.
+            """
+
+            kwargs = {"flags" : flags,
+                      "channel_map" : channel_map}
+
+            if flags == None:
+                del kwargs["flags"]
+            if channel_map == None:
+                del kwargs["channel_map"]
+        
+            self._paMacCoreStreamInfo = paMacCoreStreamInfo(**kwargs)
+
+        def get_flags(self):
+            """
+            Return the flags set at instantiation.
+
+            :rtype: int
+            """
+            
+            return self._paMacCoreStreamInfo.flags
+
+        def get_channel_map(self):
+            """
+            Return the channel map set at instantiation.
+
+            :rtype: tuple or None
+            """
+            
+            return self._paMacCoreStreamInfo.channel_map
+
+        def _get_host_api_stream_object(self):
+            """ Private method. """
+
+            return self._paMacCoreStreamInfo

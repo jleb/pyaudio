@@ -1,67 +1,32 @@
 ======================================================================
-PyAudio v0.1.0 Compilation Hints
+PyAudio v0.2.0 Compilation Hints
 ======================================================================
 
 Here are some hints for compiling PortAudio and PyAudio on various
 platforms:
 
-    * General UNIX Guide: (GNU/Linux, Cygwin)
+    * General UNIX Guide: (GNU/Linux, Mac OS X, Cygwin)
     * Microsoft Windows (native)
-    * Apple Mac OS X 10.4
 
-Generally speaking, you must first download and compile PortAudio v19,
-then untar and build PyAudio inside the PortAudio build directory.
- 
+Generally speaking, you must first install the PortAudio v19 library
+before building PyAudio.
+
 
 ----------------------------------------------------------------------
-General UNIX Guide
+General UNIX Guide (GNU/Linux, Mac OS X, Cygwin)
 ----------------------------------------------------------------------
 
-1. Build PortAudio v19. When running configure, use the --with-pic
-   flag to generate position independent code in static libraries,
-   i.e.:
+1. Build and install PortAudio, i.e.:
 
-   % ./configure --with-pic && make
+   % ./configure
+   % make
+   % make install # you may need to be root
 
-2. Untar PyAudio inside your PortAudio directory.
-   For example, if your PortAudio v19 directory is ./portaudio-v19/, 
-   then the PyAudio source should be in ./portaudio-v19/pyaudio/
+   (Or better yet, use your package manager to install PortAudio v19)
 
-3. To build PyAudio, from inside the pyaudio/ directory, run:
-
-   % python setup.py build
-
-4. To install PyAudio:
+2. Extract PyAudio; to build and install, run:
 
    % python setup.py install
-
-
-Special Note: GNU/Linux with ALSA
-----------------------------------------------------------------------
-If you build PortAudio with ALSA support (usually the case on 
-GNU/Linux), then build PyAudio as follows:
-
-   % python setup.py build --with-alsa
-
-
-Special Note: Cygwin
-----------------------------------------------------------------------
-When building PortAudio under Cygwin, you may have to modify
-PortAudio's Makefile in order for PortAudio to compile and link
-properly.
-
-1. Add the following CFLAGS to your Makefile:
-
-    -DPA_NO_DS -DPA_NO_WDMKS -DPA_NO_ASIO -DPA_NO_WASAPI
-
-2. ...and be sure to include these additional linker objects (OTHER_OBJS):
-
-    src/hostapi/wmme/pa_win_wmme.o 
-    src/os/win/pa_win_hostapis.o 
-    src/os/win/pa_win_util.o
-
-Seems like a bug in PortAudio's build infrastructure --- I've
-submitted a patch, so perhaps one day this will be fixed.
 
 
 ----------------------------------------------------------------------
@@ -70,8 +35,7 @@ Microsoft Windows
 
 If you are targeting native Win32 Python, you will need either
 Microsoft Visual Studio or MinGW (via Cygwin). Here are compilation
-hints for using MinGW under the Cygwin build environment. Be sure to
-read the special note for Cygwin above.
+hints for using MinGW under the Cygwin build environment.
 
 Note: I've only tested this under Cygwin's build environment. Your
 mileage may vary in other environments (i.e., compiling PortAudio with
@@ -80,19 +44,26 @@ MinGW's compiler and environment).
 (If you have instructions for building PyAudio using Visual Studio,
 I'd love to hear about it.)
 
-   
-1. Build PortAudio v19. When running configure, be sure to use
-   ``-mno-cygwin`` (under cygwin) to generate native Win32 binaries:
+1. Download PortAudio to portaudio-v19/ and build; when running
+   configure, be sure to use ``-mno-cygwin`` (under cygwin) to
+   generate native Win32 binaries:
 
      % CFLAGS="-mno-cygwin" LDFLAGS="-mno-cygwin" ./configure
+     % make
 
-2. Untar PyAudio inside your PortAudio directory.
-   For example, if your PortAudio v19 directory is ./portaudio-v19/, 
-   then the PyAudio source should be in ./portaudio-v19/pyaudio/
+2. Untar PyAudio in the same (parent) directory that contains your
+   PortAudio directory. For example, if your PortAudio v19 directory
+   is ~/portaudio-v19/, then the PyAudio source should be in
+   ~/pyaudio-0.2.0/
 
-3. To build PyAudio, from inside the pyaudio/ directory, run:
+3. To build PyAudio, from inside the pyaudio-0.2.0/ directory, run:
 
-     % python setup.py build -cmingw32
+     % python setup.py build --static-link -cmingw32
+
+   Be sure to invoke the native Win32 python rather than cygwin's
+   python.  The --static-link option statically links in the PortAudio
+   library to the PyAudio module, which is probably the best way to go
+   on Windows.
 
 4. To install PyAudio:
 
@@ -100,28 +71,4 @@ I'd love to hear about it.)
 
    The --skip-build option prevents Python from searching your system
    for Visual Studio and the .NET framework.
-
-
-----------------------------------------------------------------------
-Apple Mac OS X
-----------------------------------------------------------------------
-
-If you are using the MacPython 2.4.3 (Universal Binary), you will need
-to compile a "fat" universal binary for both PortAudio and pyAudio:
-
-1. Build PortAudio v19 as a fat binary; be sure to use Makefile.darwin:
-
-     % make -f Makefile.darwin
-
-2. Untar PyAudio inside your PortAudio directory.
-   For example, if your PortAudio v19 directory is ./portaudio-v19/, 
-   then the PyAudio source should be in ./portaudio-v19/pyaudio/
-
-3. To build PyAudio, from inside the pyaudio/ directory, run:
-
-     % python setup.py build
-
-4. To install PyAudio:
-
-     % python setup.py install
 

@@ -6,7 +6,7 @@ Build-Depends: python-all-dev, python-support (>= 0.6), debhelper(>= 5), portaud
 Maintainer: Justin Mazzola Paluska <jmp@mit.edu>
 
 Package: python-pyaudio
-Depends: ${python:Depends}
+Depends: ${python:Depends}, libportaudio2
 Provides: ${python:Provides}
 Architecture: any
 Description: Python bindings for PortAudio v19

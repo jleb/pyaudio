@@ -1,3 +1,10 @@
+2010-08-12  Hubert Pham  <hubert@mit.edu>
+
+  PyAudio 0.2.4
+
+  - Maintenance release: updated directory structure and packaging.
+
+
 2008-10-29  Hubert Pham  <hubert@mit.edu>
 
   PyAudio 0.2.3

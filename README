@@ -1,5 +1,5 @@
 ======================================================================
-PyAudio v0.2.3: Python Bindings for PortAudio.
+PyAudio v0.2.4: Python Bindings for PortAudio.
 ======================================================================
 
 See: http://people.csail.mit.edu/hubert/pyaudio/
@@ -17,7 +17,7 @@ See INSTALL for compilation hints.
 
 PyAudio : Python Bindings for PortAudio.
 
-Copyright (c) 2006-2008 Hubert Pham
+Copyright (c) 2006-2010 Hubert Pham
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

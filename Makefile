@@ -12,6 +12,7 @@ DOC_URL=http://people.csail.mit.edu/hubert/pyaudio/
 what:
 	@echo "make targets:"
 	@echo
+	@echo " tarball    : build source tarball"
 	@echo " docs       : generate documentation (requires epydoc)"
 	@echo " clean      : remove build files"
 	@echo
@@ -20,7 +21,7 @@ what:
 	@echo "   python setup.py install"
 
 clean:
-	@rm -rf build dist $(DOCS_OUTPUT)
+	@rm -rf build dist MANIFEST $(DOCS_OUTPUT) src/*.pyc
 
 ######################################################################
 # Documentation
@@ -30,3 +31,9 @@ docs:
 	@cd src; \
 	$(EPYDOC) -v -o ../$(DOCS_OUTPUT) --name $(DOC_NAME) --url $(DOC_URL) \
 	--no-private pyaudio.py
+
+######################################################################
+# Source Tarball
+######################################################################
+tarball: docs $(SRCFILES) MANIFEST.in
+	@python setup.py sdist

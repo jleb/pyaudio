@@ -1,7 +1,7 @@
 """
-PyAudio v0.2.3: Python Bindings for PortAudio.
+PyAudio v0.2.4: Python Bindings for PortAudio.
 
-Copyright (c) 2006-2008 Hubert Pham
+Copyright (c) 2006-2010 Hubert Pham
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,9 +28,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from distutils.core import setup, Extension
 import sys
+import os
 
-__revision__ = "$Revision: 14 $"
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 # Note: distutils will try to locate and link dynamically
 #       against portaudio.
@@ -51,8 +51,10 @@ STATIC_LINKING = False
 if "--static-link" in sys.argv:
     STATIC_LINKING = True
     sys.argv.remove("--static-link")
-    
-pyaudio_module_sources = ['_portaudiomodule.c']
+
+portaudio_path = os.environ.get("PORTAUDIO_PATH", "./portaudio-v19")
+
+pyaudio_module_sources = ['src/_portaudiomodule.c']
 
 include_dirs = []
 external_libraries = []
@@ -62,8 +64,10 @@ scripts = []
 defines = []
 
 if STATIC_LINKING:
-    extra_link_args = ['../portaudio-v19/lib/.libs/libportaudio.a']
-    include_dirs = ['../portaudio-v19/include/']
+    extra_link_args = [
+        os.path.join(portaudio_path, 'lib/.libs/libportaudio.a')
+        ]
+    include_dirs = [os.path.join(portaudio_path, 'include/')]
 else:
     # dynamic linking
     external_libraries = ['portaudio']
@@ -84,15 +88,14 @@ if STATIC_LINKING:
     elif sys.platform == 'cygwin':
         external_libraries += ['winmm']
         extra_link_args += ['-lwinmm']
-        
+
     elif sys.platform == 'win32':
         # i.e., Win32 Python with mingw32
         # run: python setup.py build -cmingw32
         external_libraries += ['winmm']
         extra_link_args += ['-lwinmm']
-        scripts += ['packaging/postinst.py']
-        
-    elif sys.platform == 'linux2':        
+
+    elif sys.platform == 'linux2':
         external_libraries += ['rt', 'm', 'pthread']
 
         # Since you're insisting on linking statically against
@@ -103,7 +106,7 @@ if STATIC_LINKING:
         # today. If you need JACK support, add it here.
 
         external_libraries += ['asound']
-        
+
 
 pyaudio = Extension('_portaudio',
                     sources = pyaudio_module_sources,
@@ -112,7 +115,7 @@ pyaudio = Extension('_portaudio',
                     libraries = external_libraries,
                     extra_compile_args = extra_compile_args,
                     extra_link_args = extra_link_args)
-               
+
 setup (name = 'PyAudio',
        version = __version__,
        author = "Hubert Pham",
@@ -121,4 +124,5 @@ setup (name = 'PyAudio',
        long_description = __doc__.lstrip(),
        scripts = scripts,
        py_modules = ['pyaudio'],
+       package_dir = {'': 'src'},
        ext_modules = [pyaudio])

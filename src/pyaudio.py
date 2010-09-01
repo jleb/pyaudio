@@ -1,6 +1,6 @@
 # PyAudio : Python Bindings for PortAudio.
 
-# Copyright (c) 2006-2008 Hubert Pham
+# Copyright (c) 2006-2010 Hubert Pham
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,7 +30,7 @@
   A list of all PortAudio ``PaSampleFormat`` value constants.
 
   See: `paInt32`, `paInt24`, `paInt16`, `paInt8`, and `paUInt8`.
-  
+
 :var PaHostApiTypeId:
   A list of all PortAudio ``PaHostApiTypeId`` constants.
 
@@ -85,11 +85,11 @@
 :sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode
 :sort: PortAudio Constants, PaSampleFormat Values,
        PaHostApiTypeId Values, PaErrorCode Values
-                        
+
 """
 
 __author__ = "Hubert Pham"
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -211,17 +211,17 @@ def get_sample_size(format):
     """
     Returns the size (in bytes) for the specified
     sample `format` (a `PaSampleFormat` constant).
-    
-    :param `format`: 
+
+    :param `format`:
        PortAudio sample format constant `PaSampleFormat`.
-    
+
     :raises ValueError: Invalid specified `format`.
-    
+
     :rtype: int
     """
 
     return pa.get_sample_size(format)
-    
+
 def get_format_from_width(width, unsigned = True):
     """
     Returns a PortAudio format constant for
@@ -251,7 +251,7 @@ def get_format_from_width(width, unsigned = True):
         return paFloat32
     else:
         raise ValueError, "Invalid width: %d" % width
-    
+
 
 ############################################################
 # Versioning
@@ -270,17 +270,17 @@ def get_portaudio_version_text():
     Returns PortAudio version as a text string.
 
     :rtype: str """
-    
+
     return pa.get_version_text()
 
 ############################################################
 # Wrapper around _portaudio Stream (Internal)
 ############################################################
 
-# Note: See PyAudio class below for main export. 
+# Note: See PyAudio class below for main export.
 
 class Stream:
-    
+
     """
     PortAudio Stream Wrapper. Use `PyAudio.open` to make a new
     `Stream`.
@@ -296,7 +296,7 @@ class Stream:
 
     :group Input Output:
       write, read, get_read_available, get_write_available
-      
+
     """
 
     def __init__(self,
@@ -319,7 +319,7 @@ class Stream:
 
         :param `PA_manager`: A reference to the managing `PyAudio` instance
         :param `rate`: Sampling rate
-        :param `channels`: Number of channels            
+        :param `channels`: Number of channels
         :param `format`: Sampling size and format. See `PaSampleFormat`.
         :param `input`: Specifies whether this is an input stream.
             Defaults to False.
@@ -342,7 +342,7 @@ class Stream:
         :param `output_host_api_specific_stream_info`: Specifies a host API
             specific stream information data structure for output.
             See `PaMacCoreStreamInfo`.
-             
+
         :raise ValueError: Neither input nor output
          are set True.
 
@@ -391,7 +391,7 @@ class Stream:
             arguments[
                 'output_host_api_specific_stream_info'
                 ] = _l._get_host_api_stream_object()
-                                                             
+
         # calling pa.open returns a stream object
         self._stream = pa.open(**arguments)
 
@@ -410,7 +410,7 @@ class Stream:
         self._is_running = False
 
         self._parent._remove_stream(self)
-            
+
 
     ############################################################
     # Stream Info
@@ -424,7 +424,7 @@ class Stream:
         """
 
         return self._stream.inputLatency
-    
+
 
     def get_output_latency(self):
         """
@@ -434,7 +434,7 @@ class Stream:
         """
 
         return self._stream.outputLatency
-    
+
     def get_time(self):
         """
         Return stream time.
@@ -450,7 +450,7 @@ class Stream:
         Return the CPU load.
 
         (Note: this is always 0.0 for the blocking API.)
-        
+
         :rtype: float
 
         """
@@ -461,10 +461,10 @@ class Stream:
     ############################################################
     # Stream Management
     ############################################################
-    
+
     def start_stream(self):
         """ Start the stream. """
-        
+
         if self._is_running:
             return
 
@@ -496,7 +496,7 @@ class Stream:
         :rtype: bool """
 
         return pa.is_stream_stopped(self._stream)
-    
+
 
     ############################################################
     # Reading/Writing
@@ -504,12 +504,12 @@ class Stream:
 
     def write(self, frames, num_frames = None,
               exception_on_underflow = False):
-        
+
         """
         Write samples to the stream.
 
-        
-        :param `frames`: 
+
+        :param `frames`:
            The frames of data.
         :param `num_frames`:
            The number of frames to write.
@@ -520,7 +520,7 @@ class Stream:
            (or silently ignored) on buffer underflow. Defaults
            to False for improved performance, especially on
            slower platforms.
-           
+
         :raises IOError: if the stream is not an output stream
          or if the write operation was unsuccessful.
 
@@ -546,7 +546,7 @@ class Stream:
         """
         Read samples from the stream.
 
-        
+
         :param `num_frames`:
            The number of frames to read.
 
@@ -554,9 +554,9 @@ class Stream:
          or if the read operation was unsuccessful.
 
         :rtype: str
-        
+
         """
-        
+
         if not self._is_input:
             raise IOError("Not input stream",
                           paCanNotReadFromAnOutputOnlyStream)
@@ -580,7 +580,7 @@ class Stream:
         without waiting.
 
         :rtype: int
-        
+
         """
 
         return pa.get_stream_write_available(self._stream)
@@ -619,7 +619,7 @@ class PyAudio:
 
     :group Stream Format Conversion:
       get_sample_size, get_format_from_width
-      
+
     """
 
     ############################################################
@@ -632,7 +632,7 @@ class PyAudio:
 
         pa.initialize()
         self._streams = set()
-    
+
     def terminate(self):
 
         """ Terminate PortAudio.
@@ -658,8 +658,8 @@ class PyAudio:
         Returns the size (in bytes) for the specified
         sample `format` (a `PaSampleFormat` constant).
 
-        
-        :param `format`: 
+
+        :param `format`:
            Sample format constant (`PaSampleFormat`).
 
         :raises ValueError: Invalid specified `format`.
@@ -675,7 +675,7 @@ class PyAudio:
         Returns a PortAudio format constant for
         the specified `width`.
 
-        :param `width`: 
+        :param `width`:
             The desired sample width in bytes (1, 2, 3, or 4)
         :param `unsigned`:
             For 1 byte width, specifies signed or unsigned format.
@@ -719,7 +719,7 @@ class PyAudio:
     def close(self, stream):
         """
         Close a stream. Typically use `Stream.close` instead.
-        
+
         :param `stream`:
            An instance of the `Stream` object.
 
@@ -734,16 +734,16 @@ class PyAudio:
 
     def _remove_stream(self, stream):
         """
-        Internal method. Removes a stream. 
-        
-        :param `stream`: 
+        Internal method. Removes a stream.
+
+        :param `stream`:
            An instance of the `Stream` object.
 
         """
 
         if stream in self._streams:
             self._streams.remove(stream)
-        
+
 
     ############################################################
     # Host API Inspection
@@ -766,7 +766,7 @@ class PyAudio:
 
         :raises IOError: if no default input device available
         :rtype: dict
-        
+
         """
 
         defaultHostApiIndex = pa.get_default_host_api()
@@ -780,18 +780,18 @@ class PyAudio:
         dictionary mirror the data fields of PortAudio's ``PaHostApiInfo``
         structure.
 
-        
-        :param `host_api_type`: 
+
+        :param `host_api_type`:
            The desired Host API (`PaHostApiTypeId` constant).
 
         :raises IOError: for invalid `host_api_type`
-        :rtype: dict        
+        :rtype: dict
         """
 
         index = pa.host_api_type_id_to_host_api_index(host_api_type)
         return self.get_host_api_info_by_index(index)
 
-                                 
+
     def get_host_api_info_by_index(self, host_api_index):
         """
         Return a dictionary containing the Host API parameters for the
@@ -802,8 +802,8 @@ class PyAudio:
         :param `host_api_index`: The host api index.
 
         :raises IOError: for invalid `host_api_index`
-           
-        :rtype: dict        
+
+        :rtype: dict
         """
 
         return self._make_host_api_dictionary(
@@ -826,15 +826,15 @@ class PyAudio:
            The *n* 'th device of the host API.
 
         :raises IOError: for invalid indices
-        
+
         :rtype: dict
         """
 
-        long_method_name = pa.host_api_device_index_to_device_index 
+        long_method_name = pa.host_api_device_index_to_device_index
         device_index = long_method_name(host_api_index,
                                         host_api_device_index)
         return self.get_device_info_by_index(device_index)
-    
+
 
     def _make_host_api_dictionary(self, index, host_api_struct):
         """
@@ -843,7 +843,7 @@ class PyAudio:
 
         :rtype: dict
         """
-        
+
         return {'index' : index,
                 'structVersion' : host_api_struct.structVersion,
                 'type' : host_api_struct.type,
@@ -851,7 +851,7 @@ class PyAudio:
                 'deviceCount' : host_api_struct.deviceCount,
                 'defaultInputDevice' : host_api_struct.defaultInputDevice,
                 'defaultOutputDevice' : host_api_struct.defaultOutputDevice}
-    
+
     ############################################################
     # Device Inspection
     ############################################################
@@ -876,7 +876,7 @@ class PyAudio:
         Check to see if specified device configuration
         is supported. Returns True if the configuration
         is supported; throws a ValueError exception otherwise.
-        
+
         :param `rate`:
            Specifies the desired rate (in Hz)
         :param `input_device`:
@@ -895,12 +895,12 @@ class PyAudio:
            The desired number of output channels. Ignored if
            `input_device` is not specified (or `None`).
         :param `output_format`:
-           PortAudio sample format constant (`PaSampleFormat`). 
+           PortAudio sample format constant (`PaSampleFormat`).
 
         :rtype: bool
         :raises ValueError: tuple containing:
            (error string, PortAudio error code `PaErrorCode`).
-        
+
         """
 
         if input_device == None and output_device == None:
@@ -920,7 +920,7 @@ class PyAudio:
             kwargs['output_format'] = output_format
 
         return pa.is_format_supported(rate, **kwargs)
-        
+
 
     def get_default_input_device_info(self):
         """
@@ -929,14 +929,14 @@ class PyAudio:
         of PortAudio's ``PaDeviceInfo`` structure.
 
         :raises IOError: No default input device available.
-        :rtype: dict        
+        :rtype: dict
         """
 
         device_index = pa.get_default_input_device()
         return self.get_device_info_by_index(device_index)
 
     def get_default_output_device_info(self):
-        """        
+        """
         Return the default output Device parameters as a
         dictionary. The keys of the dictionary mirror the data fields
         of PortAudio's ``PaDeviceInfo`` structure.
@@ -973,7 +973,7 @@ class PyAudio:
 
         :rtype: dict
         """
-                
+
         return {'index' : index,
                 'structVersion' : device_info.structVersion,
                 'name' : device_info.name,
@@ -1022,7 +1022,7 @@ else:
 
         :group Settings:
           get_flags, get_channel_map
-          
+
         """
         paMacCoreChangeDeviceParameters = pa.paMacCoreChangeDeviceParameters
         paMacCoreFailIfConversionRequired = pa.paMacCoreFailIfConversionRequired
@@ -1055,7 +1055,7 @@ else:
                 del kwargs["flags"]
             if channel_map == None:
                 del kwargs["channel_map"]
-        
+
             self._paMacCoreStreamInfo = paMacCoreStreamInfo(**kwargs)
 
         def get_flags(self):
@@ -1064,7 +1064,7 @@ else:
 
             :rtype: int
             """
-            
+
             return self._paMacCoreStreamInfo.flags
 
         def get_channel_map(self):
@@ -1073,7 +1073,7 @@ else:
 
             :rtype: tuple or None
             """
-            
+
             return self._paMacCoreStreamInfo.channel_map
 
         def _get_host_api_stream_object(self):

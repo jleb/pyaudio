@@ -49,7 +49,6 @@
  *     - PaHostInfo
  *     - PaStream
  * III. PortAudio Method Implementations
- *      (BLOCKING MODE ONLY!)
  *     - Initialization/Termination
  *     - HostAPI
  *     - DeviceAPI
@@ -1352,8 +1351,6 @@ pa_get_host_api_info(PyObject *self, PyObject *args)
   return (PyObject *) py_info;
 }
 
-
-
 /*************************************************************
  * Device API
  *************************************************************/
@@ -1470,16 +1467,110 @@ pa_get_device_info(PyObject *self, PyObject *args)
  * Stream Open / Close / Supported
  *************************************************************/
 
+int
+_stream_callback_cfunction(const void *input, void *output, unsigned long frameCount,
+                           const PaStreamCallbackTimeInfo *timeInfo,
+                           PaStreamCallbackFlags statusFlags, void *userData)
+{
+  PyGILState_STATE _state = PyGILState_Ensure();
+
+#ifdef VERBOSE
+  if (statusFlags != 0) {
+    printf("Status flag set: ");
+    if (statusFlags & paInputUnderflow) {
+      printf("input underflow!\n");
+    }
+    if (statusFlags & paInputOverflow) {
+      printf("input overflow!\n");
+    }
+    if (statusFlags & paInputUnderflow) {
+      printf("output underflow!\n");
+    }
+    if (statusFlags & paInputUnderflow) {
+      printf("output overflow!\n");
+    }
+    if (statusFlags & paInputUnderflow) {
+      printf("priming output!\n");
+    }
+  }
+#endif
+
+  PyObject *py_callback;
+  int bytesPerFrame;
+  if (!PyArg_ParseTuple((PyObject*)userData,"Oi",&py_callback, &bytesPerFrame))
+    return paAbort;
+
+  PyObject *py_frameCount = PyLong_FromUnsignedLong(frameCount);
+  PyObject *py_inTime     = PyLong_FromUnsignedLong(timeInfo->inputBufferAdcTime);
+  PyObject *py_curTime    = PyLong_FromUnsignedLong(timeInfo->currentTime);
+  PyObject *py_outTime    = PyLong_FromUnsignedLong(timeInfo->outputBufferDacTime);
+
+  PyObject *py_inputData;
+  if (input) {
+    py_inputData = PyByteArray_FromStringAndSize(input,bytesPerFrame*frameCount);
+    Py_INCREF(py_inputData);
+  } else {
+    py_inputData = Py_None;
+  }
+
+  PyObject *py_result;
+  py_result = PyObject_CallFunctionObjArgs(py_callback,
+                                           py_frameCount,
+                                           py_inTime,
+                                           py_curTime,
+                                           py_outTime,
+                                           py_inputData,
+                                           NULL);
+  if (input) {
+    Py_DECREF(py_inputData);
+  }
+
+  if (py_result == NULL) {
+#ifdef VERBOSE
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error message: Could not call callback function\n");
+#endif
+
+    PyErr_SetString(PyExc_RuntimeError, "could not call callback function");
+    PyGILState_Release(_state);
+    return paAbort;
+  }
+
+  const char* pData;
+  int output_len;
+  int returnVal;
+  if (!PyArg_ParseTuple(py_result, "s#i",
+                        &pData,
+                        &output_len,
+                        &returnVal)) {
+      PyGILState_Release(_state);
+      return paAbort;
+  }
+  Py_DECREF(py_result);
+
+  char *output_data = (char*)output;
+  memcpy(output_data,pData,output_len);
+
+  if (output_len < frameCount*bytesPerFrame) {
+    memset(output_data+output_len,0,frameCount*bytesPerFrame-output_len);
+    PyGILState_Release(_state);
+    return paComplete;
+  }
+
+  PyGILState_Release(_state);
+  return returnVal;
+}
+
 static PyObject *
 pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-
   int rate, channels;
   int input, output, frames_per_buffer;
   int input_device_index = -1;
   int output_device_index = -1;
   PyObject *input_device_index_arg = NULL;
   PyObject *output_device_index_arg = NULL;
+  PyFunctionObject *stream_callback = NULL;
   PaSampleFormat format;
   PaError err;
 
@@ -1510,13 +1601,14 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 			   "frames_per_buffer",
 			   "input_host_api_specific_stream_info",
 			   "output_host_api_specific_stream_info",
+               "stream_callback",
 			   NULL};
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs,
 #ifdef MACOSX
-				   "iik|iiOOiO!O!",
+				   "iik|iiOOiO!O!O!",
 #else
-				   "iik|iiOOiOO",
+				   "iik|iiOOiOOO!",
 #endif
 				   kwlist,
 				   &rate, &channels, &format,
@@ -1531,7 +1623,9 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 #ifdef MACOSX
 				   &_pyAudio_MacOSX_hostApiSpecificStreamInfoType,
 #endif
-				   &outputHostSpecificStreamInfo))
+				   &outputHostSpecificStreamInfo,
+                   &PyFunction_Type,
+                   &stream_callback))
 
     return NULL;
 
@@ -1613,7 +1707,8 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
       outputParameters->device = output_device_index;
 
     /* final check -- ensure that there is a default device */
-    if (outputParameters->device < 0) {
+    if (outputParameters->device < 0 ||
+        outputParameters->device >= Pa_GetDeviceCount()) {
       free(outputParameters);
       PyErr_SetObject(PyExc_IOError,
 		      Py_BuildValue("(s,i)",
@@ -1677,6 +1772,11 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 
   PaStream *stream = NULL;
   PaStreamInfo *streamInfo = NULL;
+  PyObject *userData = NULL;
+  if (stream_callback) {
+      userData = Py_BuildValue("Oi",stream_callback,Pa_GetSampleSize(format)*channels);
+  }
+  Py_XINCREF(userData);
 
   err = Pa_OpenStream(&stream,
 		      /* input/output parameters */
@@ -1690,10 +1790,10 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 		      /* we won't output out of range samples
 			 so don't bother clipping them */
 		      paClipOff,
-		      /* no callback, use blocking API */
-		      NULL,
-		      /* no callback, so no callback userData */
-		      NULL);
+		      /* callback, if specified */
+		      (stream_callback)?(_stream_callback_cfunction):(NULL),
+		      /* callback userData, if applicable */
+		      (stream_callback)?(userData):(NULL));
 
   if (err != paNoError) {
 
@@ -2447,6 +2547,11 @@ init_portaudio(void)
 			  paCanNotWriteToAnInputOnlyStream);
   PyModule_AddIntConstant(m, "paIncompatibleStreamHostApi",
 			  paIncompatibleStreamHostApi);
+
+  /* callback constants */
+  PyModule_AddIntConstant(m, "paContinue", paContinue);
+  PyModule_AddIntConstant(m, "paComplete", paComplete);
+  PyModule_AddIntConstant(m, "paAbort", paAbort);
 
 #ifdef MACOSX
   PyModule_AddIntConstant(m, "paMacCoreChangeDeviceParameters",

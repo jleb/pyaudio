@@ -24,8 +24,6 @@
 
 """ PyAudio : Python Bindings for PortAudio v19.
 
-**These bindings only support PortAudio blocking mode.**
-
 :var PaSampleFormat:
   A list of all PortAudio ``PaSampleFormat`` value constants.
 
@@ -45,8 +43,13 @@
   See: `paNoError`, `paNotInitialized`, `paUnanticipatedHostError`,
   *et al...*
 
+:var PaCallbackReturnCode:
+    A list of all PortAudio callback return codes.
+
+    See: `paContinue`, `paComplete`, `paAbort`
+
 :group PortAudio Constants:
-  PaSampleFormat, PaHostApiTypeId, PaErrorCode
+  PaSampleFormat, PaHostApiTypeId, PaErrorCode, PaCallbackReturnCode
 
 :group PaSampleFormat Values:
   paFloat32, paInt32, paInt24, paInt16,
@@ -76,13 +79,16 @@
   paCanNotWriteToAnInputOnlyStream,
   paIncompatibleStreamHostApi
 
+:group PaCallbackReturnCode Values:
+    paContinue, paComplete, paAbort
+
 :group Stream Conversion Convenience Functions:
   get_sample_size, get_format_from_width
 
 :group PortAudio version:
   get_portaudio_version, get_portaudio_version_text
 
-:sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode
+:sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode, PaCallbackReturnCode
 :sort: PortAudio Constants, PaSampleFormat Values,
        PaHostApiTypeId Values, PaErrorCode Values
 
@@ -127,7 +133,6 @@ paCustomFormat = pa.paCustomFormat
 # group them together for epydoc
 PaSampleFormat = ['paFloat32', 'paInt32', 'paInt24', 'paInt16',
                   'paInt8', 'paUInt8', 'paCustomFormat']
-
 
 ###### HostAPI TypeId #####
 
@@ -202,6 +207,14 @@ PaErrorCode = ['paNoError',
                'paCanNotReadFromAnOutputOnlyStream',
                'paCanNotWriteToAnInputOnlyStream',
                'paIncompatibleStreamHostApi']
+
+###### portaudio callback return codes ######
+paContinue = pa.paContinue
+paComplete = pa.paComplete
+paAbort = pa.paAbort
+
+# group them together for epydoc
+PaCallbackReturnCode = ['paContinue', 'paComplete', 'paAbort']
 
 ############################################################
 # Convenience Functions
@@ -311,7 +324,8 @@ class Stream:
                  frames_per_buffer = 1024,
                  start = True,
                  input_host_api_specific_stream_info = None,
-                 output_host_api_specific_stream_info = None):
+                 output_host_api_specific_stream_info = None,
+                 stream_callback = None):
         """
         Initialize a stream; this should be called by
         `PyAudio.open`. A stream can either be input, output, or both.
@@ -342,6 +356,12 @@ class Stream:
         :param `output_host_api_specific_stream_info`: Specifies a host API
             specific stream information data structure for output.
             See `PaMacCoreStreamInfo`.
+        :param `stream_callback1: Specifies a callback function
+            the callback function must conform to the following signature:
+            callback(frame_count, input_time, current_time, output_time, in_data)
+            and it must return a tuple (out_data, flag), where flag must be
+            either paContinue, paComplete or paAbort. If out_data does not
+            contain at least frame_count frames, paComplete will be assumed.
 
         :raise ValueError: Neither input nor output
          are set True.
@@ -391,6 +411,9 @@ class Stream:
             arguments[
                 'output_host_api_specific_stream_info'
                 ] = _l._get_host_api_stream_object()
+
+        if stream_callback:
+            arguments[ 'stream_callback' ] = stream_callback
 
         # calling pa.open returns a stream object
         self._stream = pa.open(**arguments)

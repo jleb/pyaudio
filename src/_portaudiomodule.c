@@ -1527,13 +1527,11 @@ _stream_callback_cfunction(const void *input, void *output,
     PyLong_FromUnsignedLong(timeInfo->outputBufferDacTime);
   PyObject *py_statusFlags = PyLong_FromUnsignedLong(statusFlags);
 
-  PyObject *py_inputData;
+  PyObject *py_inputData = Py_None;
+
   if (input) {
     py_inputData = PyBytes_FromStringAndSize(input,
                                              bytesPerFrame * frameCount);
-    Py_INCREF(py_inputData);
-  } else {
-    py_inputData = Py_None;
   }
 
   PyObject *py_result;
@@ -1545,15 +1543,6 @@ _stream_callback_cfunction(const void *input, void *output,
                                            py_statusFlags,
                                            py_inputData,
                                            NULL);
-  if (input) {
-    Py_DECREF(py_inputData);
-  }
-
-  Py_XDECREF(py_frameCount);
-  Py_XDECREF(py_inTime);
-  Py_XDECREF(py_curTime);
-  Py_XDECREF(py_outTime);
-  Py_XDECREF(py_statusFlags);
 
   if (py_result == NULL) {
 #ifdef VERBOSE
@@ -1615,6 +1604,19 @@ _stream_callback_cfunction(const void *input, void *output,
   }
 
  end:
+
+  if (input) {
+    // Decrement this at the end, after memcpy, in case the user
+    // returns py_inputData back for playback.
+    Py_DECREF(py_inputData);
+  }
+
+  Py_XDECREF(py_frameCount);
+  Py_XDECREF(py_inTime);
+  Py_XDECREF(py_curTime);
+  Py_XDECREF(py_outTime);
+  Py_XDECREF(py_statusFlags);
+
   PyGILState_Release(_state);
   return returnVal;
 }

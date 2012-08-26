@@ -1560,6 +1560,11 @@ _stream_callback_cfunction(const void *input, void *output,
                         &pData,
                         &output_len,
                         &returnVal)) {
+#ifdef VERBOSE
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error message: Could not parse callback return value\n");
+#endif
+
     Py_XDECREF(py_result);
     returnVal = paAbort;
     goto end;

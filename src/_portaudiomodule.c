@@ -1512,8 +1512,8 @@ _stream_callback_cfunction(const void *input, void *output,
 
   PyObject *py_inputData;
   if (input) {
-    py_inputData = PyByteArray_FromStringAndSize(input,
-                                                 bytesPerFrame * frameCount);
+    py_inputData = PyBytes_FromStringAndSize(input,
+                                             bytesPerFrame * frameCount);
     Py_INCREF(py_inputData);
   } else {
     py_inputData = Py_None;

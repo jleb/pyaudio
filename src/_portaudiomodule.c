@@ -907,6 +907,12 @@ static PyTypeObject _pyAudio_MacOSX_hostApiSpecificStreamInfoType = {
  *************************************************************/
 
 typedef struct {
+  PyObject *callback;
+  long mainThreadId;
+  unsigned int frameSize;
+} PyAudioCallbackContext;
+
+typedef struct {
   PyObject_HEAD
   PaStream *stream;
   PaStreamParameters *inputParameters;
@@ -914,6 +920,9 @@ typedef struct {
 
   /* include PaStreamInfo too! */
   PaStreamInfo *streamInfo;
+
+  /* context for callback */
+  PyAudioCallbackContext *callbackContext;
 
   int is_open;
 } _pyAudio_Stream;
@@ -942,6 +951,11 @@ _cleanup_Stream_object(_pyAudio_Stream *streamObject)
   if (streamObject->outputParameters != NULL) {
     free(streamObject->outputParameters);
     streamObject->outputParameters = NULL;
+  }
+
+  if (streamObject->callbackContext != NULL) {
+    free(streamObject->callbackContext);
+    streamObject->callbackContext = NULL;
   }
 
   /* designate the stream as closed */
@@ -1500,14 +1514,10 @@ _stream_callback_cfunction(const void *input, void *output,
   }
 #endif
 
-  PyObject *py_callback;
-  int bytesPerFrame;
-  if (!PyArg_ParseTuple((PyObject*)userData,
-                        "Oi",
-                        &py_callback,
-                        &bytesPerFrame)) {
-    goto end;
-  }
+  PyAudioCallbackContext *context = (PyAudioCallbackContext *)userData;
+  PyObject *py_callback = context->callback;
+  unsigned int bytesPerFrame = context->frameSize;
+  long mainThreadId = context->mainThreadId;
 
   PyObject *py_frameCount = PyLong_FromUnsignedLong(frameCount);
   PyObject *py_inTime = PyLong_FromUnsignedLong(timeInfo->inputBufferAdcTime);
@@ -1798,11 +1808,15 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 
   PaStream *stream = NULL;
   PaStreamInfo *streamInfo = NULL;
-  PyObject *userData = NULL;
+  PyAudioCallbackContext *context = NULL;
+
+  // Handle callback mode:
   if (stream_callback) {
-      userData = Py_BuildValue("Oi",stream_callback,Pa_GetSampleSize(format)*channels);
+    context = (PyAudioCallbackContext *) malloc(sizeof(PyAudioCallbackContext));
+    context->callback = (PyObject *) stream_callback;
+    context->mainThreadId = PyThreadState_Get()->thread_id;
+    context->frameSize = Pa_GetSampleSize(format) * channels;
   }
-  Py_XINCREF(userData);
 
   err = Pa_OpenStream(&stream,
 		      /* input/output parameters */
@@ -1819,7 +1833,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 		      /* callback, if specified */
 		      (stream_callback)?(_stream_callback_cfunction):(NULL),
 		      /* callback userData, if applicable */
-		      (stream_callback)?(userData):(NULL));
+		      context);
 
   if (err != paNoError) {
 
@@ -1851,6 +1865,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
   streamObject->outputParameters = outputParameters;
   streamObject->is_open = 1;
   streamObject->streamInfo = streamInfo;
+  streamObject->callbackContext = context;
 
   return (PyObject *) streamObject;
 }

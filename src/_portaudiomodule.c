@@ -38,6 +38,10 @@
 #define DEFAULT_FRAMES_PER_BUFFER 1024
 /* #define VERBOSE */
 
+#define min(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
 
 /************************************************************
  *
@@ -1554,7 +1558,7 @@ _stream_callback_cfunction(const void *input, void *output, unsigned long frameC
   Py_DECREF(py_result);
 
   char *output_data = (char*)output;
-  memcpy(output_data,pData,output_len);
+  memcpy(output_data, pData, min(output_len, bytesPerFrame * frameCount));
 
   if (output_len < frameCount*bytesPerFrame) {
     memset(output_data+output_len,0,frameCount*bytesPerFrame-output_len);

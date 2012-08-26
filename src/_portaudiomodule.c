@@ -1559,6 +1559,16 @@ _stream_callback_cfunction(const void *input, void *output,
     fprintf(stderr, "An error occured while using the portaudio stream\n");
     fprintf(stderr, "Error message: Could not call callback function\n");
 #endif
+    PyObject *err = PyErr_Occurred();
+
+    if (err) {
+        PyThreadState_SetAsyncExc(mainThreadId, err);
+
+        // Print out a stack trace to help debugging.
+        // TODO: make VERBOSE a runtime flag so users can control
+        // the amount of logging.
+        PyErr_Print();
+    }
 
     goto end;
   }
@@ -1574,6 +1584,17 @@ _stream_callback_cfunction(const void *input, void *output,
     fprintf(stderr, "An error occured while using the portaudio stream\n");
     fprintf(stderr, "Error message: Could not parse callback return value\n");
 #endif
+
+    PyObject *err = PyErr_Occurred();
+
+    if (err) {
+        PyThreadState_SetAsyncExc(mainThreadId, err);
+
+        // Print out a stack trace to help debugging.
+        // TODO: make VERBOSE a runtime flag so users can control
+        // the amount of logging.
+        PyErr_Print();
+    }
 
     Py_XDECREF(py_result);
     returnVal = paAbort;

@@ -48,6 +48,12 @@
 
     See: `paContinue`, `paComplete`, `paAbort`
 
+:var PaCallbackStatus:
+    A list of all PortAudio callback status codes.
+
+    See: `paInputUnderflow`, `paInputOverflow`, `paOutputUnderflow`,
+    `paOutputOverflow`, `paPrimingOutput`
+
 :group PortAudio Constants:
   PaSampleFormat, PaHostApiTypeId, PaErrorCode, PaCallbackReturnCode
 
@@ -82,13 +88,19 @@
 :group PaCallbackReturnCode Values:
     paContinue, paComplete, paAbort
 
+:group PaCallbackStatus Values:
+    paInputUnderflow, paInputOverflow, paOutputUnderflow,
+    paOutputOverflow, paPrimingOutput
+
 :group Stream Conversion Convenience Functions:
   get_sample_size, get_format_from_width
 
 :group PortAudio version:
   get_portaudio_version, get_portaudio_version_text
 
-:sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode, PaCallbackReturnCode
+:sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode, PaCallbackReturnCode,
+       PaCallbackStatus
+
 :sort: PortAudio Constants, PaSampleFormat Values,
        PaHostApiTypeId Values, PaErrorCode Values
 
@@ -368,12 +380,49 @@ class Stream:
         :param `output_host_api_specific_stream_info`: Specifies a host API
             specific stream information data structure for output.
             See `PaMacCoreStreamInfo`.
-        :param `stream_callback`: Specifies a callback function, which
-            must conform to the following signature:
-            callback(frame_count, input_time, current_time, output_time, in_data)
-            and it must return a tuple (out_data, flag), where flag must be
-            either paContinue, paComplete or paAbort. If out_data does not
-            contain at least frame_count frames, paComplete will be assumed.
+        :param `stream_callback`: Specifies a callback function for
+            *non-blocking* (callback) operation.  Default is
+            ``None``, which indicates *blocking* operation (i.e.,
+            `Stream.read` and `Stream.write`).  To use non-blocking operation,
+            specify a callback that conforms to the following signature:
+
+            .. python::
+
+               callback(frame_count,  # number of frames
+                        input_time,
+                        current_time,
+                        output_time,
+                        status,       # PaCallbackStatus
+                        in_data)      # recorded data if input=True; else None
+
+            that must return a tuple:
+
+            .. python::
+
+                (out_data, flag)
+
+            ``out_data`` is a string whose length should be the
+            (``frame_count * channels * bytes-per-channel``) if
+            ``output=True`` or ``None`` if ``output=False``.  ``flag``
+            must be either `paContinue`, `paComplete` or `paAbort`.
+
+            When ``output=True`` and ``out_data`` does not contain at
+            least ``frame_count`` frames, `paComplete` is assumed for
+            ``flag``.
+
+            **Note:** ``stream_callback`` is called in a separate
+            thread (from the main thread).  Exceptions that occur in
+            the ``stream_callback`` will:
+
+            1. print a traceback on standard error to aid debugging,
+            2. queue the exception to be thrown (at some point) in
+               the main thread, and
+            3. return `paAbort` to PortAudio to stop the stream.
+
+            **Note:** Do not call `Stream.read` or `Stream.write` if using
+            non-blocking operation.
+
+            **See:** PortAudio's callback signature for additional details: http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a8a60fb2a5ec9cbade3f54a9c978e2710
 
         :raise ValueError: Neither input nor output
          are set True.
@@ -541,8 +590,8 @@ class Stream:
               exception_on_underflow = False):
 
         """
-        Write samples to the stream.
-
+        Write samples to the stream.  Do not call when using
+        *non-blocking* mode.
 
         :param `frames`:
            The frames of data.
@@ -579,7 +628,8 @@ class Stream:
 
     def read(self, num_frames):
         """
-        Read samples from the stream.
+        Read samples from the stream.  Do not call when using
+        *non-blocking* mode.
 
 
         :param `num_frames`:

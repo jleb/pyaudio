@@ -1488,13 +1488,13 @@ _stream_callback_cfunction(const void *input, void *output,
     if (statusFlags & paInputOverflow) {
       printf("input overflow!\n");
     }
-    if (statusFlags & paInputUnderflow) {
+    if (statusFlags & paOutputUnderflow) {
       printf("output underflow!\n");
     }
-    if (statusFlags & paInputUnderflow) {
+    if (statusFlags & paOutputUnderflow) {
       printf("output overflow!\n");
     }
-    if (statusFlags & paInputUnderflow) {
+    if (statusFlags & paPrimingOutput) {
       printf("priming output!\n");
     }
   }
@@ -1514,6 +1514,7 @@ _stream_callback_cfunction(const void *input, void *output,
   PyObject *py_curTime = PyLong_FromUnsignedLong(timeInfo->currentTime);
   PyObject *py_outTime =
     PyLong_FromUnsignedLong(timeInfo->outputBufferDacTime);
+  PyObject *py_statusFlags = PyLong_FromUnsignedLong(statusFlags);
 
   PyObject *py_inputData;
   if (input) {
@@ -1530,6 +1531,7 @@ _stream_callback_cfunction(const void *input, void *output,
                                            py_inTime,
                                            py_curTime,
                                            py_outTime,
+                                           py_statusFlags,
                                            py_inputData,
                                            NULL);
   if (input) {
@@ -1540,6 +1542,7 @@ _stream_callback_cfunction(const void *input, void *output,
   Py_XDECREF(py_inTime);
   Py_XDECREF(py_curTime);
   Py_XDECREF(py_outTime);
+  Py_XDECREF(py_statusFlags);
 
   if (py_result == NULL) {
 #ifdef VERBOSE
@@ -1547,7 +1550,6 @@ _stream_callback_cfunction(const void *input, void *output,
     fprintf(stderr, "Error message: Could not call callback function\n");
 #endif
 
-    PyErr_SetString(PyExc_RuntimeError, "could not call callback function");
     goto end;
   }
 
@@ -2573,6 +2575,13 @@ init_portaudio(void)
   PyModule_AddIntConstant(m, "paContinue", paContinue);
   PyModule_AddIntConstant(m, "paComplete", paComplete);
   PyModule_AddIntConstant(m, "paAbort", paAbort);
+
+  /* callback status flags */
+  PyModule_AddIntConstant(m, "paInputUnderflow", paInputUnderflow);
+  PyModule_AddIntConstant(m, "paInputOverflow", paInputOverflow);
+  PyModule_AddIntConstant(m, "paOutputUnderflow", paOutputUnderflow);
+  PyModule_AddIntConstant(m, "paOutputOverflow", paOutputOverflow);
+  PyModule_AddIntConstant(m, "paPrimingOutput", paPrimingOutput);
 
 #ifdef MACOSX
   PyModule_AddIntConstant(m, "paMacCoreChangeDeviceParameters",

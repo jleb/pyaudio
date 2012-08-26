@@ -216,6 +216,18 @@ paAbort = pa.paAbort
 # group them together for epydoc
 PaCallbackReturnCode = ['paContinue', 'paComplete', 'paAbort']
 
+###### portaudio callback flags ######
+paInputUnderflow = pa.paInputUnderflow
+paInputOverflow = pa.paInputOverflow
+paOutputUnderflow = pa.paOutputUnderflow
+paOutputOverflow = pa.paOutputOverflow
+paPrimingOutput = pa.paPrimingOutput
+
+# group them together for epydoc
+PaCallbackStatus = ['paInputUnderflow', 'paInputOverflow',
+                    'paOutputUnderflow', 'paOutputOverflow',
+                    'paPrimingOutput']
+
 ############################################################
 # Convenience Functions
 ############################################################

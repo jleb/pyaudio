@@ -1525,6 +1525,11 @@ _stream_callback_cfunction(const void *input, void *output, unsigned long frameC
     Py_DECREF(py_inputData);
   }
 
+  Py_XDECREF(py_frameCount);
+  Py_XDECREF(py_inTime);
+  Py_XDECREF(py_curTime);
+  Py_XDECREF(py_outTime);
+
   if (py_result == NULL) {
 #ifdef VERBOSE
     fprintf(stderr, "An error occured while using the portaudio stream\n");

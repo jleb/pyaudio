@@ -1476,6 +1476,7 @@ _stream_callback_cfunction(const void *input, void *output,
                            const PaStreamCallbackTimeInfo *timeInfo,
                            PaStreamCallbackFlags statusFlags, void *userData)
 {
+  int returnVal = paAbort;
   PyGILState_STATE _state = PyGILState_Ensure();
 
 #ifdef VERBOSE
@@ -1501,8 +1502,12 @@ _stream_callback_cfunction(const void *input, void *output,
 
   PyObject *py_callback;
   int bytesPerFrame;
-  if (!PyArg_ParseTuple((PyObject*)userData,"Oi",&py_callback, &bytesPerFrame))
-    return paAbort;
+  if (!PyArg_ParseTuple((PyObject*)userData,
+                        "Oi",
+                        &py_callback,
+                        &bytesPerFrame)) {
+    goto end;
+  }
 
   PyObject *py_frameCount = PyLong_FromUnsignedLong(frameCount);
   PyObject *py_inTime = PyLong_FromUnsignedLong(timeInfo->inputBufferAdcTime);
@@ -1543,19 +1548,19 @@ _stream_callback_cfunction(const void *input, void *output,
 #endif
 
     PyErr_SetString(PyExc_RuntimeError, "could not call callback function");
-    PyGILState_Release(_state);
-    return paAbort;
+    goto end;
   }
 
   const char* pData;
   int output_len;
-  int returnVal;
+
   if (!PyArg_ParseTuple(py_result, "s#i",
                         &pData,
                         &output_len,
                         &returnVal)) {
-    PyGILState_Release(_state);
-    return paAbort;
+    Py_XDECREF(py_result);
+    returnVal = paAbort;
+    goto end;
   }
 
   Py_DECREF(py_result);
@@ -1567,10 +1572,10 @@ _stream_callback_cfunction(const void *input, void *output,
     memset(output_data + output_len,
 	   0,
 	   (frameCount * bytesPerFrame) - output_len);
-    PyGILState_Release(_state);
-    return paComplete;
+    returnVal = paComplete;
   }
 
+ end:
   PyGILState_Release(_state);
   return returnVal;
 }

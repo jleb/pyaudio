@@ -954,6 +954,7 @@ _cleanup_Stream_object(_pyAudio_Stream *streamObject)
   }
 
   if (streamObject->callbackContext != NULL) {
+    Py_XDECREF(streamObject->callbackContext->callback);
     free(streamObject->callbackContext);
     streamObject->callbackContext = NULL;
   }
@@ -1833,6 +1834,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 
   // Handle callback mode:
   if (stream_callback) {
+    Py_INCREF(stream_callback);
     context = (PyAudioCallbackContext *) malloc(sizeof(PyAudioCallbackContext));
     context->callback = (PyObject *) stream_callback;
     context->mainThreadId = PyThreadState_Get()->thread_id;

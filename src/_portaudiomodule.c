@@ -1,9 +1,7 @@
 /**
  * PyAudio: Python Bindings for PortAudio.
  *
- * May 2006: Supports Non-Blocking mode only
- *
- * Copyright (c) 2006-2008 Hubert Pham
+ * Copyright (c) 2006-2012 Hubert Pham
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -1473,7 +1471,8 @@ pa_get_device_info(PyObject *self, PyObject *args)
  *************************************************************/
 
 int
-_stream_callback_cfunction(const void *input, void *output, unsigned long frameCount,
+_stream_callback_cfunction(const void *input, void *output,
+                           unsigned long frameCount,
                            const PaStreamCallbackTimeInfo *timeInfo,
                            PaStreamCallbackFlags statusFlags, void *userData)
 {
@@ -1506,13 +1505,15 @@ _stream_callback_cfunction(const void *input, void *output, unsigned long frameC
     return paAbort;
 
   PyObject *py_frameCount = PyLong_FromUnsignedLong(frameCount);
-  PyObject *py_inTime     = PyLong_FromUnsignedLong(timeInfo->inputBufferAdcTime);
-  PyObject *py_curTime    = PyLong_FromUnsignedLong(timeInfo->currentTime);
-  PyObject *py_outTime    = PyLong_FromUnsignedLong(timeInfo->outputBufferDacTime);
+  PyObject *py_inTime = PyLong_FromUnsignedLong(timeInfo->inputBufferAdcTime);
+  PyObject *py_curTime = PyLong_FromUnsignedLong(timeInfo->currentTime);
+  PyObject *py_outTime =
+    PyLong_FromUnsignedLong(timeInfo->outputBufferDacTime);
 
   PyObject *py_inputData;
   if (input) {
-    py_inputData = PyByteArray_FromStringAndSize(input,bytesPerFrame*frameCount);
+    py_inputData = PyByteArray_FromStringAndSize(input,
+                                                 bytesPerFrame * frameCount);
     Py_INCREF(py_inputData);
   } else {
     py_inputData = Py_None;
@@ -1553,16 +1554,19 @@ _stream_callback_cfunction(const void *input, void *output, unsigned long frameC
                         &pData,
                         &output_len,
                         &returnVal)) {
-      PyGILState_Release(_state);
-      return paAbort;
+    PyGILState_Release(_state);
+    return paAbort;
   }
+
   Py_DECREF(py_result);
 
   char *output_data = (char*)output;
   memcpy(output_data, pData, min(output_len, bytesPerFrame * frameCount));
 
   if (output_len < frameCount*bytesPerFrame) {
-    memset(output_data+output_len,0,frameCount*bytesPerFrame-output_len);
+    memset(output_data + output_len,
+	   0,
+	   (frameCount * bytesPerFrame) - output_len);
     PyGILState_Release(_state);
     return paComplete;
   }
@@ -1611,7 +1615,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 			   "frames_per_buffer",
 			   "input_host_api_specific_stream_info",
 			   "output_host_api_specific_stream_info",
-               "stream_callback",
+                           "stream_callback",
 			   NULL};
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs,

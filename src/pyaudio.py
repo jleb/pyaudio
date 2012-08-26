@@ -356,8 +356,8 @@ class Stream:
         :param `output_host_api_specific_stream_info`: Specifies a host API
             specific stream information data structure for output.
             See `PaMacCoreStreamInfo`.
-        :param `stream_callback1: Specifies a callback function
-            the callback function must conform to the following signature:
+        :param `stream_callback`: Specifies a callback function, which
+            must conform to the following signature:
             callback(frame_count, input_time, current_time, output_time, in_data)
             and it must return a tuple (out_data, flag), where flag must be
             either paContinue, paComplete or paAbort. If out_data does not
@@ -413,7 +413,7 @@ class Stream:
                 ] = _l._get_host_api_stream_object()
 
         if stream_callback:
-            arguments[ 'stream_callback' ] = stream_callback
+            arguments['stream_callback'] = stream_callback
 
         # calling pa.open returns a stream object
         self._stream = pa.open(**arguments)

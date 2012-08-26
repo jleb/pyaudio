@@ -2456,6 +2456,8 @@ init_portaudio(void)
 {
   PyObject* m;
 
+  PyEval_InitThreads();
+
   _pyAudio_StreamType.tp_new = PyType_GenericNew;
   if (PyType_Ready(&_pyAudio_StreamType) < 0)
     return;

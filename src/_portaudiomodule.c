@@ -908,8 +908,8 @@ static PyTypeObject _pyAudio_MacOSX_hostApiSpecificStreamInfoType = {
 
 typedef struct {
   PyObject *callback;
-  long mainThreadId;
-  unsigned int frameSize;
+  long main_thread_id;
+  unsigned int frame_size;
 } PyAudioCallbackContext;
 
 typedef struct {
@@ -1486,12 +1486,14 @@ pa_get_device_info(PyObject *self, PyObject *args)
  *************************************************************/
 
 int
-_stream_callback_cfunction(const void *input, void *output,
+_stream_callback_cfunction(const void *input,
+                           void *output,
                            unsigned long frameCount,
                            const PaStreamCallbackTimeInfo *timeInfo,
-                           PaStreamCallbackFlags statusFlags, void *userData)
+                           PaStreamCallbackFlags statusFlags,
+                           void *userData)
 {
-  int returnVal = paAbort;
+  int return_val = paAbort;
   PyGILState_STATE _state = PyGILState_Ensure();
 
 #ifdef VERBOSE
@@ -1517,31 +1519,31 @@ _stream_callback_cfunction(const void *input, void *output,
 
   PyAudioCallbackContext *context = (PyAudioCallbackContext *)userData;
   PyObject *py_callback = context->callback;
-  unsigned int bytesPerFrame = context->frameSize;
-  long mainThreadId = context->mainThreadId;
+  unsigned int bytes_per_frame = context->frame_size;
+  long main_thread_id = context->main_thread_id;
 
-  PyObject *py_frameCount = PyLong_FromUnsignedLong(frameCount);
-  PyObject *py_inTime = PyLong_FromUnsignedLong(timeInfo->inputBufferAdcTime);
-  PyObject *py_curTime = PyLong_FromUnsignedLong(timeInfo->currentTime);
-  PyObject *py_outTime =
+  PyObject *py_frame_count = PyLong_FromUnsignedLong(frameCount);
+  PyObject *py_in_time = PyLong_FromUnsignedLong(timeInfo->inputBufferAdcTime);
+  PyObject *py_cur_time = PyLong_FromUnsignedLong(timeInfo->currentTime);
+  PyObject *py_out_time =
     PyLong_FromUnsignedLong(timeInfo->outputBufferDacTime);
-  PyObject *py_statusFlags = PyLong_FromUnsignedLong(statusFlags);
+  PyObject *py_status_flags = PyLong_FromUnsignedLong(statusFlags);
 
-  PyObject *py_inputData = Py_None;
+  PyObject *py_input_data = Py_None;
 
   if (input) {
-    py_inputData = PyBytes_FromStringAndSize(input,
-                                             bytesPerFrame * frameCount);
+    py_input_data = PyBytes_FromStringAndSize(input,
+                                             bytes_per_frame * frameCount);
   }
 
   PyObject *py_result;
   py_result = PyObject_CallFunctionObjArgs(py_callback,
-                                           py_frameCount,
-                                           py_inTime,
-                                           py_curTime,
-                                           py_outTime,
-                                           py_statusFlags,
-                                           py_inputData,
+                                           py_frame_count,
+                                           py_in_time,
+                                           py_cur_time,
+                                           py_out_time,
+                                           py_status_flags,
+                                           py_input_data,
                                            NULL);
 
   if (py_result == NULL) {
@@ -1552,7 +1554,7 @@ _stream_callback_cfunction(const void *input, void *output,
     PyObject *err = PyErr_Occurred();
 
     if (err) {
-        PyThreadState_SetAsyncExc(mainThreadId, err);
+        PyThreadState_SetAsyncExc(main_thread_id, err);
 
         // Print out a stack trace to help debugging.
         // TODO: make VERBOSE a runtime flag so users can control
@@ -1563,14 +1565,14 @@ _stream_callback_cfunction(const void *input, void *output,
     goto end;
   }
 
-  const char* pData;
+  const char *pData;
   int output_len;
 
   if (!PyArg_ParseTuple(py_result,
                         "z#i",
                         &pData,
                         &output_len,
-                        &returnVal)) {
+                        &return_val)) {
 #ifdef VERBOSE
     fprintf(stderr, "An error occured while using the portaudio stream\n");
     fprintf(stderr, "Error message: Could not parse callback return value\n");
@@ -1579,7 +1581,7 @@ _stream_callback_cfunction(const void *input, void *output,
     PyObject *err = PyErr_Occurred();
 
     if (err) {
-        PyThreadState_SetAsyncExc(mainThreadId, err);
+        PyThreadState_SetAsyncExc(main_thread_id, err);
 
         // Print out a stack trace to help debugging.
         // TODO: make VERBOSE a runtime flag so users can control
@@ -1588,22 +1590,22 @@ _stream_callback_cfunction(const void *input, void *output,
     }
 
     Py_XDECREF(py_result);
-    returnVal = paAbort;
+    return_val = paAbort;
     goto end;
   }
 
   Py_DECREF(py_result);
 
-  if ((returnVal != paComplete) &&
-      (returnVal != paAbort) &&
-      (returnVal != paContinue)) {
+  if ((return_val != paComplete) &&
+      (return_val != paAbort) &&
+      (return_val != paContinue)) {
       PyErr_SetString(PyExc_ValueError,
                       "Invalid PaStreamCallbackResult from callback");
-      PyThreadState_SetAsyncExc(mainThreadId, PyErr_Occurred());
+      PyThreadState_SetAsyncExc(main_thread_id, PyErr_Occurred());
       PyErr_Print();
 
       // Quit the callback loop
-      returnVal = paAbort;
+      return_val = paAbort;
 
       goto end;
   }
@@ -1612,15 +1614,15 @@ _stream_callback_cfunction(const void *input, void *output,
 
   if (output) {
       char *output_data = (char*)output;
-      memcpy(output_data, pData, min(output_len, bytesPerFrame * frameCount));
+      memcpy(output_data, pData, min(output_len, bytes_per_frame * frameCount));
 
       // Pad out the rest of the buffer with 0s if callback returned
       // too few frames (and assume paComplete).
-      if (output_len < frameCount*bytesPerFrame) {
+      if (output_len < (frameCount * bytes_per_frame)) {
           memset(output_data + output_len,
                  0,
-                 (frameCount * bytesPerFrame) - output_len);
-          returnVal = paComplete;
+                 (frameCount * bytes_per_frame) - output_len);
+          return_val = paComplete;
       }
   }
 
@@ -1628,18 +1630,18 @@ _stream_callback_cfunction(const void *input, void *output,
 
   if (input) {
     // Decrement this at the end, after memcpy, in case the user
-    // returns py_inputData back for playback.
-    Py_DECREF(py_inputData);
+    // returns py_input_data back for playback.
+    Py_DECREF(py_input_data);
   }
 
-  Py_XDECREF(py_frameCount);
-  Py_XDECREF(py_inTime);
-  Py_XDECREF(py_curTime);
-  Py_XDECREF(py_outTime);
-  Py_XDECREF(py_statusFlags);
+  Py_XDECREF(py_frame_count);
+  Py_XDECREF(py_in_time);
+  Py_XDECREF(py_cur_time);
+  Py_XDECREF(py_out_time);
+  Py_XDECREF(py_status_flags);
 
   PyGILState_Release(_state);
-  return returnVal;
+  return return_val;
 }
 
 static PyObject *
@@ -1860,8 +1862,8 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_INCREF(stream_callback);
     context = (PyAudioCallbackContext *) malloc(sizeof(PyAudioCallbackContext));
     context->callback = (PyObject *) stream_callback;
-    context->mainThreadId = PyThreadState_Get()->thread_id;
-    context->frameSize = Pa_GetSampleSize(format) * channels;
+    context->main_thread_id = PyThreadState_Get()->thread_id;
+    context->frame_size = Pa_GetSampleSize(format) * channels;
   }
 
   err = Pa_OpenStream(&stream,

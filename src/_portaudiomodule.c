@@ -711,10 +711,11 @@ _pyAudio_MacOSX_hostApiSpecificStreamInfo_dealloc(_pyAudio_Mac_HASSI *self)
 }
 
 static int
-_pyAudio_MacOSX_hostApiSpecificStreamInfo_init(_pyAudio_Mac_HASSI *self,
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_init(PyObject *_self,
 					       PyObject *args,
 					       PyObject *kwargs)
 {
+  _pyAudio_Mac_HASSI *self = (_pyAudio_Mac_HASSI *) _self;
   PyObject *channel_map = NULL;
   int flags = paMacCorePlayNice;
 
@@ -1657,7 +1658,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
 
-    input_device_index = PyInt_AsLong(input_device_index_arg);
+    input_device_index = (int) PyInt_AsLong(input_device_index_arg);
 
 #ifdef VERBOSE
     printf("Using input device index number: %d\n", input_device_index);
@@ -1682,7 +1683,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
 
-    output_device_index = PyInt_AsLong(output_device_index_arg);
+    output_device_index = (int) PyInt_AsLong(output_device_index_arg);
 
 #ifdef VERBOSE
     printf("Using output device index number: %d\n", output_device_index);

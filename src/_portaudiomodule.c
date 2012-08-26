@@ -1566,7 +1566,8 @@ _stream_callback_cfunction(const void *input, void *output,
   const char* pData;
   int output_len;
 
-  if (!PyArg_ParseTuple(py_result, "s#i",
+  if (!PyArg_ParseTuple(py_result,
+                        "z#i",
                         &pData,
                         &output_len,
                         &returnVal)) {
@@ -1593,14 +1594,34 @@ _stream_callback_cfunction(const void *input, void *output,
 
   Py_DECREF(py_result);
 
-  char *output_data = (char*)output;
-  memcpy(output_data, pData, min(output_len, bytesPerFrame * frameCount));
+  if ((returnVal != paComplete) &&
+      (returnVal != paAbort) &&
+      (returnVal != paContinue)) {
+      PyErr_SetString(PyExc_ValueError,
+                      "Invalid PaStreamCallbackResult from callback");
+      PyThreadState_SetAsyncExc(mainThreadId, PyErr_Occurred());
+      PyErr_Print();
 
-  if (output_len < frameCount*bytesPerFrame) {
-    memset(output_data + output_len,
-	   0,
-	   (frameCount * bytesPerFrame) - output_len);
-    returnVal = paComplete;
+      // Quit the callback loop
+      returnVal = paAbort;
+
+      goto end;
+  }
+
+  // Copy bytes for playback only if this is an output stream:
+
+  if (output) {
+      char *output_data = (char*)output;
+      memcpy(output_data, pData, min(output_len, bytesPerFrame * frameCount));
+
+      // Pad out the rest of the buffer with 0s if callback returned
+      // too few frames (and assume paComplete).
+      if (output_len < frameCount*bytesPerFrame) {
+          memset(output_data + output_len,
+                 0,
+                 (frameCount * bytesPerFrame) - output_len);
+          returnVal = paComplete;
+      }
   }
 
  end:

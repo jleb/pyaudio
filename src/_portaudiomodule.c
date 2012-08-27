@@ -1523,27 +1523,27 @@ _stream_callback_cfunction(const void *input,
   long main_thread_id = context->main_thread_id;
 
   PyObject *py_frame_count = PyLong_FromUnsignedLong(frameCount);
-  PyObject *py_in_time = PyLong_FromUnsignedLong(timeInfo->inputBufferAdcTime);
-  PyObject *py_cur_time = PyLong_FromUnsignedLong(timeInfo->currentTime);
-  PyObject *py_out_time =
-    PyLong_FromUnsignedLong(timeInfo->outputBufferDacTime);
+  PyObject *py_time_info = Py_BuildValue("{s:d,s:d,s:d}",
+                                         "input_buffer_adc_time",
+                                         timeInfo->inputBufferAdcTime,
+                                         "current_time",
+                                         timeInfo->currentTime,
+                                         "output_buffer_dac_time",
+                                         timeInfo->outputBufferDacTime);
   PyObject *py_status_flags = PyLong_FromUnsignedLong(statusFlags);
-
   PyObject *py_input_data = Py_None;
 
   if (input) {
     py_input_data = PyBytes_FromStringAndSize(input,
-                                             bytes_per_frame * frameCount);
+                                              bytes_per_frame * frameCount);
   }
 
   PyObject *py_result;
   py_result = PyObject_CallFunctionObjArgs(py_callback,
-                                           py_frame_count,
-                                           py_in_time,
-                                           py_cur_time,
-                                           py_out_time,
-                                           py_status_flags,
                                            py_input_data,
+                                           py_frame_count,
+                                           py_time_info,
+                                           py_status_flags,
                                            NULL);
 
   if (py_result == NULL) {
@@ -1635,9 +1635,7 @@ _stream_callback_cfunction(const void *input,
   }
 
   Py_XDECREF(py_frame_count);
-  Py_XDECREF(py_in_time);
-  Py_XDECREF(py_cur_time);
-  Py_XDECREF(py_out_time);
+  Py_XDECREF(py_time_info);
   Py_XDECREF(py_status_flags);
 
   PyGILState_Release(_state);

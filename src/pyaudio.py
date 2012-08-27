@@ -388,14 +388,17 @@ class Stream:
 
             .. python::
 
-               callback(frame_count,  # number of frames
-                        input_time,
-                        current_time,
-                        output_time,
-                        status,       # PaCallbackStatus
-                        in_data)      # recorded data if input=True; else None
+               callback(in_data,      # recorded data if input=True; else None
+                        frame_count,  # number of frames
+                        time_info,    # dictionary
+                        status_flags) # PaCallbackStatus
 
-            that must return a tuple:
+            ``time_info`` is a dictionary with the following keys:
+            ``input_buffer_adc_time``, ``current_time``, and
+            ``output_buffer_dac_time``.  See the PortAudio
+            documentation for their meanings.
+
+            The callback must return a tuple:
 
             .. python::
 

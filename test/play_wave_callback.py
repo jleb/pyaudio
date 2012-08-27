@@ -13,7 +13,7 @@ wf = wave.open(sys.argv[1], 'rb')
 
 p = pyaudio.PyAudio()
 
-def callback(frame_count, in_time, cur_time, out_time, status, in_data):
+def callback(in_data, frame_count, time_info, status):
     data = wf.readframes(frame_count)
     return (data, pyaudio.paContinue)
 

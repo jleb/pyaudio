@@ -20,7 +20,7 @@ if sys.platform == 'darwin':
 
 p = pyaudio.PyAudio()
 
-def callback(frame_count, in_time, cur_time, out_time, status, in_data):
+def callback(in_data, frame_count, time_info, status):
     return (in_data, pyaudio.paContinue)
 
 stream = p.open(format = p.get_format_from_width(WIDTH),

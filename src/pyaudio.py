@@ -287,7 +287,7 @@ def get_format_from_width(width, unsigned = True):
     elif width == 4:
         return paFloat32
     else:
-        raise ValueError, "Invalid width: %d" % width
+        raise ValueError("Invalid width: %d" % width)
 
 
 ############################################################
@@ -434,9 +434,7 @@ class Stream:
 
         # no stupidity allowed
         if not (input or output):
-            raise ValueError, \
-                  "Must specify an input or output " +\
-                  "stream."
+            raise ValueError("Must specify an input or output " + "stream.")
 
         # remember parent
         self._parent = PA_manager
@@ -622,7 +620,7 @@ class Stream:
         if num_frames == None:
             # determine how many frames to read
             width = get_sample_size(self._format)
-            num_frames = len(frames) / (self._channels * width)
+            num_frames = int(len(frames) / (self._channels * width))
             #print len(frames), self._channels, self._width, num_frames
 
         pa.write_stream(self._stream, frames, num_frames,
@@ -785,7 +783,7 @@ class PyAudio:
         elif width == 4:
             return paFloat32
         else:
-            raise ValueError, "Invalid width: %d" % width
+            raise ValueError("Invalid width: %d" % width)
 
 
     ############################################################
@@ -815,7 +813,7 @@ class PyAudio:
         """
 
         if stream not in self._streams:
-            raise ValueError, "Stream `%s' not found" % str(stream)
+            raise ValueError("Stream `%s' not found" % str(stream))
 
         stream.close()
 

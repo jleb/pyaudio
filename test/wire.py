@@ -22,19 +22,18 @@ p = pyaudio.PyAudio()
 
 stream = p.open(format =
                 p.get_format_from_width(WIDTH),
-                channels = CHANNELS, 
-                rate = RATE, 
+                channels = CHANNELS,
+                rate = RATE,
                 input = True,
                 output = True,
                 frames_per_buffer = chunk)
 
-print "* recording"
-for i in range(0, 44100 / chunk * RECORD_SECONDS):
+print("* recording")
+for i in range(0, int(44100 / chunk * RECORD_SECONDS)):
     data = stream.read(chunk)
     stream.write(data, chunk)
-print "* done"
+print("* done")
 
 stream.stop_stream()
 stream.close()
 p.terminate()
-

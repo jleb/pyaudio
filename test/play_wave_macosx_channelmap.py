@@ -9,7 +9,7 @@ chunk = 1024
 PyAudio = pyaudio.PyAudio
 
 if len(sys.argv) < 2:
-    print "Plays a wave file.\n\nUsage: %s filename.wav" % sys.argv[0]
+    print("Plays a wave file.\n\nUsage: %s filename.wav" % sys.argv[0])
     sys.exit(-1)
 
 wf = wave.open(sys.argv[1], 'rb')
@@ -43,13 +43,13 @@ try:
         flags = pyaudio.PaMacCoreStreamInfo.paMacCorePlayNice, # default
         channel_map = channel_map)
 except AttributeError:
-    print "Sorry, couldn't find PaMacCoreStreamInfo. Make sure that " \
-          "you're running on Mac OS X."
+    print("Sorry, couldn't find PaMacCoreStreamInfo. Make sure that "
+          "you're running on Mac OS X.")
     import sys
     sys.exit(-1)
-    
-print "Stream Info Flags:", stream_info.get_flags()
-print "Stream Info Channel Map:", stream_info.get_channel_map()
+
+print("Stream Info Flags:", stream_info.get_flags())
+print("Stream Info Channel Map:", stream_info.get_channel_map())
 
 # open stream
 stream = p.open(format =
@@ -71,6 +71,3 @@ stream.stop_stream()
 stream.close()
 
 p.terminate()
-
-
-

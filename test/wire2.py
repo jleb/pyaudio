@@ -10,7 +10,7 @@ import pyaudio
 import sys
 
 chunk = 1024
-WIDTH = 2 
+WIDTH = 2
 CHANNELS = 2
 RATE = 44100
 RECORD_SECONDS = 5
@@ -36,15 +36,14 @@ stream_output = p.open(format =
                        output = True,
                        frames_per_buffer = chunk)
 
-print "* recording"
-for i in range(0, 44100 / chunk * RECORD_SECONDS):
+print("* recording")
+for i in range(0, int(44100 / chunk * RECORD_SECONDS)):
     data = stream_input.read(chunk)
     stream_output.write(data, chunk)
-print "* done"
+print("* done")
 
 stream_input.stop_stream()
 stream_output.stop_stream()
 stream_input.close()
 stream_output.close()
 p.terminate()
-

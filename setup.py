@@ -53,6 +53,7 @@ if "--static-link" in sys.argv:
     sys.argv.remove("--static-link")
 
 portaudio_path = os.environ.get("PORTAUDIO_PATH", "./portaudio-v19")
+mac_sysroot_path = os.environ.get("SYSROOT_PATH", None)
 
 pyaudio_module_sources = ['src/_portaudiomodule.c']
 
@@ -75,6 +76,10 @@ else:
 
 if sys.platform == 'darwin':
     defines += [('MACOSX', '1')]
+
+    if mac_sysroot_path:
+        extra_compile_args += ["-isysroot", mac_sysroot_path]
+        extra_link_args += ["-isysroot", mac_sysroot_path]
 
 if STATIC_LINKING:
 

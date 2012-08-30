@@ -693,6 +693,7 @@ _pyAudio_MacOSX_hostApiSpecificStreamInfo_cleanup(_pyAudio_Mac_HASSI *self)
 
   if (self->channelMap != NULL) {
     free(self->channelMap);
+    self->channelMap = NULL;
   }
 
   self->flags = paMacCorePlayNice;

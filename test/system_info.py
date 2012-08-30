@@ -103,7 +103,7 @@ for i in range(max_devs):
 print("\nDefault Devices:\n================")
 try:
     def_index = p.get_default_input_device_info()['index']
-    print("Default Input Device :", def_index)
+    print("Default Input Device : %s" % def_index)
     devinfo = p.get_device_info_by_index(def_index)
     for k in list(devinfo.items()):
         name, value = k

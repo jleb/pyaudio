@@ -2532,37 +2532,23 @@ pa_get_stream_read_available(PyObject *self, PyObject *args)
 #endif
 
 #if PY_MAJOR_VERSION >= 3
-
-struct module_state {
-	PyObject *error;
-};
-
-static int paTraverse(PyObject *m, visitproc visit, void *arg) {
-	Py_VISIT(((struct module_state*)PyModule_GetState(m))->error);
-	return 0;
-}
-
-static int paClear(PyObject *m) {
-	Py_CLEAR(((struct module_state*)PyModule_GetState(m))->error);
-	return 0;
-}
-
 static struct PyModuleDef moduledef = {
-	PyModuleDef_HEAD_INIT,
-	"_portaudio",
-	NULL,
-	sizeof(struct module_state),
-	paMethods,
-	NULL,
-	paTraverse,
-	paClear,
-	NULL
+  PyModuleDef_HEAD_INIT,
+  "_portaudio",
+  NULL,
+  -1,
+  paMethods,
+  NULL,
+  NULL,
+  NULL,
+  NULL
 };
+#endif
 
-PyObject *
+PyMODINIT_FUNC
+#if PY_MAJOR_VERSION >= 3
 PyInit__portaudio(void)
 #else
-PyMODINIT_FUNC
 init_portaudio(void)
 #endif
 {

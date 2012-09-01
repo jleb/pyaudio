@@ -719,7 +719,7 @@ class PyAudio:
           instance of this object to release PortAudio resources.
         """
 
-        for stream in self._streams:
+        for stream in self._streams.copy():
             stream.close()
 
         self._streams = set()

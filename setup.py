@@ -114,20 +114,20 @@ if STATIC_LINKING:
 
 
 pyaudio = Extension('_portaudio',
-                    sources = pyaudio_module_sources,
-                    include_dirs = include_dirs,
-                    define_macros = defines,
-                    libraries = external_libraries,
-                    extra_compile_args = extra_compile_args,
-                    extra_link_args = extra_link_args)
+                    sources=pyaudio_module_sources,
+                    include_dirs=include_dirs,
+                    define_macros=defines,
+                    libraries=external_libraries,
+                    extra_compile_args=extra_compile_args,
+                    extra_link_args=extra_link_args)
 
-setup (name = 'PyAudio',
-       version = __version__,
-       author = "Hubert Pham",
-       url = "http://people.csail.mit.edu/hubert/pyaudio/",
-       description = 'PortAudio Python Bindings',
-       long_description = __doc__.lstrip(),
-       scripts = scripts,
-       py_modules = ['pyaudio'],
-       package_dir = {'': 'src'},
-       ext_modules = [pyaudio])
+setup(name = 'PyAudio',
+      version = __version__,
+      author = "Hubert Pham",
+      url = "http://people.csail.mit.edu/hubert/pyaudio/",
+      description = 'PortAudio Python Bindings',
+      long_description = __doc__.lstrip(),
+      scripts = scripts,
+      py_modules = ['pyaudio'],
+      package_dir = {'': 'src'},
+      ext_modules = [pyaudio])

@@ -24,8 +24,6 @@
 
 """ PyAudio : Python Bindings for PortAudio v19.
 
-**These bindings only support PortAudio blocking mode.**
-
 :var PaSampleFormat:
   A list of all PortAudio ``PaSampleFormat`` value constants.
 
@@ -45,8 +43,19 @@
   See: `paNoError`, `paNotInitialized`, `paUnanticipatedHostError`,
   *et al...*
 
+:var PaCallbackReturnCode:
+    A list of all PortAudio callback return codes.
+
+    See: `paContinue`, `paComplete`, `paAbort`
+
+:var PaCallbackStatus:
+    A list of all PortAudio callback status codes.
+
+    See: `paInputUnderflow`, `paInputOverflow`, `paOutputUnderflow`,
+    `paOutputOverflow`, `paPrimingOutput`
+
 :group PortAudio Constants:
-  PaSampleFormat, PaHostApiTypeId, PaErrorCode
+  PaSampleFormat, PaHostApiTypeId, PaErrorCode, PaCallbackReturnCode
 
 :group PaSampleFormat Values:
   paFloat32, paInt32, paInt24, paInt16,
@@ -76,13 +85,22 @@
   paCanNotWriteToAnInputOnlyStream,
   paIncompatibleStreamHostApi
 
+:group PaCallbackReturnCode Values:
+    paContinue, paComplete, paAbort
+
+:group PaCallbackStatus Values:
+    paInputUnderflow, paInputOverflow, paOutputUnderflow,
+    paOutputOverflow, paPrimingOutput
+
 :group Stream Conversion Convenience Functions:
   get_sample_size, get_format_from_width
 
 :group PortAudio version:
   get_portaudio_version, get_portaudio_version_text
 
-:sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode
+:sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode, PaCallbackReturnCode,
+       PaCallbackStatus
+
 :sort: PortAudio Constants, PaSampleFormat Values,
        PaHostApiTypeId Values, PaErrorCode Values
 
@@ -127,7 +145,6 @@ paCustomFormat = pa.paCustomFormat
 # group them together for epydoc
 PaSampleFormat = ['paFloat32', 'paInt32', 'paInt24', 'paInt16',
                   'paInt8', 'paUInt8', 'paCustomFormat']
-
 
 ###### HostAPI TypeId #####
 
@@ -202,6 +219,26 @@ PaErrorCode = ['paNoError',
                'paCanNotReadFromAnOutputOnlyStream',
                'paCanNotWriteToAnInputOnlyStream',
                'paIncompatibleStreamHostApi']
+
+###### portaudio callback return codes ######
+paContinue = pa.paContinue
+paComplete = pa.paComplete
+paAbort = pa.paAbort
+
+# group them together for epydoc
+PaCallbackReturnCode = ['paContinue', 'paComplete', 'paAbort']
+
+###### portaudio callback flags ######
+paInputUnderflow = pa.paInputUnderflow
+paInputOverflow = pa.paInputOverflow
+paOutputUnderflow = pa.paOutputUnderflow
+paOutputOverflow = pa.paOutputOverflow
+paPrimingOutput = pa.paPrimingOutput
+
+# group them together for epydoc
+PaCallbackStatus = ['paInputUnderflow', 'paInputOverflow',
+                    'paOutputUnderflow', 'paOutputOverflow',
+                    'paPrimingOutput']
 
 ############################################################
 # Convenience Functions
@@ -311,7 +348,8 @@ class Stream:
                  frames_per_buffer = 1024,
                  start = True,
                  input_host_api_specific_stream_info = None,
-                 output_host_api_specific_stream_info = None):
+                 output_host_api_specific_stream_info = None,
+                 stream_callback = None):
         """
         Initialize a stream; this should be called by
         `PyAudio.open`. A stream can either be input, output, or both.
@@ -342,6 +380,52 @@ class Stream:
         :param `output_host_api_specific_stream_info`: Specifies a host API
             specific stream information data structure for output.
             See `PaMacCoreStreamInfo`.
+        :param `stream_callback`: Specifies a callback function for
+            *non-blocking* (callback) operation.  Default is
+            ``None``, which indicates *blocking* operation (i.e.,
+            `Stream.read` and `Stream.write`).  To use non-blocking operation,
+            specify a callback that conforms to the following signature:
+
+            .. python::
+
+               callback(in_data,      # recorded data if input=True; else None
+                        frame_count,  # number of frames
+                        time_info,    # dictionary
+                        status_flags) # PaCallbackStatus
+
+            ``time_info`` is a dictionary with the following keys:
+            ``input_buffer_adc_time``, ``current_time``, and
+            ``output_buffer_dac_time``.  See the PortAudio
+            documentation for their meanings.
+
+            The callback must return a tuple:
+
+            .. python::
+
+                (out_data, flag)
+
+            ``out_data`` is a string whose length should be the
+            (``frame_count * channels * bytes-per-channel``) if
+            ``output=True`` or ``None`` if ``output=False``.  ``flag``
+            must be either `paContinue`, `paComplete` or `paAbort`.
+
+            When ``output=True`` and ``out_data`` does not contain at
+            least ``frame_count`` frames, `paComplete` is assumed for
+            ``flag``.
+
+            **Note:** ``stream_callback`` is called in a separate
+            thread (from the main thread).  Exceptions that occur in
+            the ``stream_callback`` will:
+
+            1. print a traceback on standard error to aid debugging,
+            2. queue the exception to be thrown (at some point) in
+               the main thread, and
+            3. return `paAbort` to PortAudio to stop the stream.
+
+            **Note:** Do not call `Stream.read` or `Stream.write` if using
+            non-blocking operation.
+
+            **See:** PortAudio's callback signature for additional details: http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a8a60fb2a5ec9cbade3f54a9c978e2710
 
         :raise ValueError: Neither input nor output
          are set True.
@@ -391,6 +475,9 @@ class Stream:
             arguments[
                 'output_host_api_specific_stream_info'
                 ] = _l._get_host_api_stream_object()
+
+        if stream_callback:
+            arguments['stream_callback'] = stream_callback
 
         # calling pa.open returns a stream object
         self._stream = pa.open(**arguments)
@@ -506,8 +593,8 @@ class Stream:
               exception_on_underflow = False):
 
         """
-        Write samples to the stream.
-
+        Write samples to the stream.  Do not call when using
+        *non-blocking* mode.
 
         :param `frames`:
            The frames of data.
@@ -544,7 +631,8 @@ class Stream:
 
     def read(self, num_frames):
         """
-        Read samples from the stream.
+        Read samples from the stream.  Do not call when using
+        *non-blocking* mode.
 
 
         :param `num_frames`:

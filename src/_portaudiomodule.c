@@ -1,9 +1,7 @@
 /**
  * PyAudio: Python Bindings for PortAudio.
  *
- * May 2006: Supports Non-Blocking mode only
- *
- * Copyright (c) 2006-2008 Hubert Pham
+ * Copyright (c) 2006-2012 Hubert Pham
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -38,6 +36,10 @@
 #define DEFAULT_FRAMES_PER_BUFFER 1024
 /* #define VERBOSE */
 
+#define min(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
 
 /************************************************************
  *
@@ -49,7 +51,6 @@
  *     - PaHostInfo
  *     - PaStream
  * III. PortAudio Method Implementations
- *      (BLOCKING MODE ONLY!)
  *     - Initialization/Termination
  *     - HostAPI
  *     - DeviceAPI
@@ -708,10 +709,11 @@ _pyAudio_MacOSX_hostApiSpecificStreamInfo_dealloc(_pyAudio_Mac_HASSI *self)
 }
 
 static int
-_pyAudio_MacOSX_hostApiSpecificStreamInfo_init(_pyAudio_Mac_HASSI *self,
+_pyAudio_MacOSX_hostApiSpecificStreamInfo_init(PyObject *_self,
 					       PyObject *args,
 					       PyObject *kwargs)
 {
+  _pyAudio_Mac_HASSI *self = (_pyAudio_Mac_HASSI *) _self;
   PyObject *channel_map = NULL;
   int flags = paMacCorePlayNice;
 
@@ -905,6 +907,12 @@ static PyTypeObject _pyAudio_MacOSX_hostApiSpecificStreamInfoType = {
  *************************************************************/
 
 typedef struct {
+  PyObject *callback;
+  long main_thread_id;
+  unsigned int frame_size;
+} PyAudioCallbackContext;
+
+typedef struct {
   PyObject_HEAD
   PaStream *stream;
   PaStreamParameters *inputParameters;
@@ -912,6 +920,9 @@ typedef struct {
 
   /* include PaStreamInfo too! */
   PaStreamInfo *streamInfo;
+
+  /* context for callback */
+  PyAudioCallbackContext *callbackContext;
 
   int is_open;
 } _pyAudio_Stream;
@@ -940,6 +951,12 @@ _cleanup_Stream_object(_pyAudio_Stream *streamObject)
   if (streamObject->outputParameters != NULL) {
     free(streamObject->outputParameters);
     streamObject->outputParameters = NULL;
+  }
+
+  if (streamObject->callbackContext != NULL) {
+    Py_XDECREF(streamObject->callbackContext->callback);
+    free(streamObject->callbackContext);
+    streamObject->callbackContext = NULL;
   }
 
   /* designate the stream as closed */
@@ -1352,8 +1369,6 @@ pa_get_host_api_info(PyObject *self, PyObject *args)
   return (PyObject *) py_info;
 }
 
-
-
 /*************************************************************
  * Device API
  *************************************************************/
@@ -1470,16 +1485,173 @@ pa_get_device_info(PyObject *self, PyObject *args)
  * Stream Open / Close / Supported
  *************************************************************/
 
+int
+_stream_callback_cfunction(const void *input,
+                           void *output,
+                           unsigned long frameCount,
+                           const PaStreamCallbackTimeInfo *timeInfo,
+                           PaStreamCallbackFlags statusFlags,
+                           void *userData)
+{
+  int return_val = paAbort;
+  PyGILState_STATE _state = PyGILState_Ensure();
+
+#ifdef VERBOSE
+  if (statusFlags != 0) {
+    printf("Status flag set: ");
+    if (statusFlags & paInputUnderflow) {
+      printf("input underflow!\n");
+    }
+    if (statusFlags & paInputOverflow) {
+      printf("input overflow!\n");
+    }
+    if (statusFlags & paOutputUnderflow) {
+      printf("output underflow!\n");
+    }
+    if (statusFlags & paOutputUnderflow) {
+      printf("output overflow!\n");
+    }
+    if (statusFlags & paPrimingOutput) {
+      printf("priming output!\n");
+    }
+  }
+#endif
+
+  PyAudioCallbackContext *context = (PyAudioCallbackContext *)userData;
+  PyObject *py_callback = context->callback;
+  unsigned int bytes_per_frame = context->frame_size;
+  long main_thread_id = context->main_thread_id;
+
+  PyObject *py_frame_count = PyLong_FromUnsignedLong(frameCount);
+  PyObject *py_time_info = Py_BuildValue("{s:d,s:d,s:d}",
+                                         "input_buffer_adc_time",
+                                         timeInfo->inputBufferAdcTime,
+                                         "current_time",
+                                         timeInfo->currentTime,
+                                         "output_buffer_dac_time",
+                                         timeInfo->outputBufferDacTime);
+  PyObject *py_status_flags = PyLong_FromUnsignedLong(statusFlags);
+  PyObject *py_input_data = Py_None;
+
+  if (input) {
+    py_input_data = PyBytes_FromStringAndSize(input,
+                                              bytes_per_frame * frameCount);
+  }
+
+  PyObject *py_result;
+  py_result = PyObject_CallFunctionObjArgs(py_callback,
+                                           py_input_data,
+                                           py_frame_count,
+                                           py_time_info,
+                                           py_status_flags,
+                                           NULL);
+
+  if (py_result == NULL) {
+#ifdef VERBOSE
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error message: Could not call callback function\n");
+#endif
+    PyObject *err = PyErr_Occurred();
+
+    if (err) {
+        PyThreadState_SetAsyncExc(main_thread_id, err);
+
+        // Print out a stack trace to help debugging.
+        // TODO: make VERBOSE a runtime flag so users can control
+        // the amount of logging.
+        PyErr_Print();
+    }
+
+    goto end;
+  }
+
+  const char *pData;
+  int output_len;
+
+  if (!PyArg_ParseTuple(py_result,
+                        "z#i",
+                        &pData,
+                        &output_len,
+                        &return_val)) {
+#ifdef VERBOSE
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error message: Could not parse callback return value\n");
+#endif
+
+    PyObject *err = PyErr_Occurred();
+
+    if (err) {
+        PyThreadState_SetAsyncExc(main_thread_id, err);
+
+        // Print out a stack trace to help debugging.
+        // TODO: make VERBOSE a runtime flag so users can control
+        // the amount of logging.
+        PyErr_Print();
+    }
+
+    Py_XDECREF(py_result);
+    return_val = paAbort;
+    goto end;
+  }
+
+  Py_DECREF(py_result);
+
+  if ((return_val != paComplete) &&
+      (return_val != paAbort) &&
+      (return_val != paContinue)) {
+      PyErr_SetString(PyExc_ValueError,
+                      "Invalid PaStreamCallbackResult from callback");
+      PyThreadState_SetAsyncExc(main_thread_id, PyErr_Occurred());
+      PyErr_Print();
+
+      // Quit the callback loop
+      return_val = paAbort;
+
+      goto end;
+  }
+
+  // Copy bytes for playback only if this is an output stream:
+
+  if (output) {
+      char *output_data = (char*)output;
+      memcpy(output_data, pData, min(output_len, bytes_per_frame * frameCount));
+
+      // Pad out the rest of the buffer with 0s if callback returned
+      // too few frames (and assume paComplete).
+      if (output_len < (frameCount * bytes_per_frame)) {
+          memset(output_data + output_len,
+                 0,
+                 (frameCount * bytes_per_frame) - output_len);
+          return_val = paComplete;
+      }
+  }
+
+ end:
+
+  if (input) {
+    // Decrement this at the end, after memcpy, in case the user
+    // returns py_input_data back for playback.
+    Py_DECREF(py_input_data);
+  }
+
+  Py_XDECREF(py_frame_count);
+  Py_XDECREF(py_time_info);
+  Py_XDECREF(py_status_flags);
+
+  PyGILState_Release(_state);
+  return return_val;
+}
+
 static PyObject *
 pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-
   int rate, channels;
   int input, output, frames_per_buffer;
   int input_device_index = -1;
   int output_device_index = -1;
   PyObject *input_device_index_arg = NULL;
   PyObject *output_device_index_arg = NULL;
+  PyFunctionObject *stream_callback = NULL;
   PaSampleFormat format;
   PaError err;
 
@@ -1510,13 +1682,14 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 			   "frames_per_buffer",
 			   "input_host_api_specific_stream_info",
 			   "output_host_api_specific_stream_info",
+                           "stream_callback",
 			   NULL};
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs,
 #ifdef MACOSX
-				   "iik|iiOOiO!O!",
+				   "iik|iiOOiO!O!O!",
 #else
-				   "iik|iiOOiOO",
+				   "iik|iiOOiOOO!",
 #endif
 				   kwlist,
 				   &rate, &channels, &format,
@@ -1531,7 +1704,9 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 #ifdef MACOSX
 				   &_pyAudio_MacOSX_hostApiSpecificStreamInfoType,
 #endif
-				   &outputHostSpecificStreamInfo))
+				   &outputHostSpecificStreamInfo,
+                   &PyFunction_Type,
+                   &stream_callback))
 
     return NULL;
 
@@ -1554,7 +1729,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
 
-    input_device_index = PyInt_AsLong(input_device_index_arg);
+    input_device_index = (int) PyInt_AsLong(input_device_index_arg);
 
 #ifdef VERBOSE
     printf("Using input device index number: %d\n", input_device_index);
@@ -1579,7 +1754,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
 
-    output_device_index = PyInt_AsLong(output_device_index_arg);
+    output_device_index = (int) PyInt_AsLong(output_device_index_arg);
 
 #ifdef VERBOSE
     printf("Using output device index number: %d\n", output_device_index);
@@ -1613,7 +1788,8 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
       outputParameters->device = output_device_index;
 
     /* final check -- ensure that there is a default device */
-    if (outputParameters->device < 0) {
+    if (outputParameters->device < 0 ||
+        outputParameters->device >= Pa_GetDeviceCount()) {
       free(outputParameters);
       PyErr_SetObject(PyExc_IOError,
 		      Py_BuildValue("(s,i)",
@@ -1677,6 +1853,16 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 
   PaStream *stream = NULL;
   PaStreamInfo *streamInfo = NULL;
+  PyAudioCallbackContext *context = NULL;
+
+  // Handle callback mode:
+  if (stream_callback) {
+    Py_INCREF(stream_callback);
+    context = (PyAudioCallbackContext *) malloc(sizeof(PyAudioCallbackContext));
+    context->callback = (PyObject *) stream_callback;
+    context->main_thread_id = PyThreadState_Get()->thread_id;
+    context->frame_size = Pa_GetSampleSize(format) * channels;
+  }
 
   err = Pa_OpenStream(&stream,
 		      /* input/output parameters */
@@ -1690,10 +1876,10 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 		      /* we won't output out of range samples
 			 so don't bother clipping them */
 		      paClipOff,
-		      /* no callback, use blocking API */
-		      NULL,
-		      /* no callback, so no callback userData */
-		      NULL);
+		      /* callback, if specified */
+		      (stream_callback)?(_stream_callback_cfunction):(NULL),
+		      /* callback userData, if applicable */
+		      context);
 
   if (err != paNoError) {
 
@@ -1725,6 +1911,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
   streamObject->outputParameters = outputParameters;
   streamObject->is_open = 1;
   streamObject->streamInfo = streamInfo;
+  streamObject->callbackContext = context;
 
   return (PyObject *) streamObject;
 }
@@ -2347,6 +2534,8 @@ init_portaudio(void)
 {
   PyObject* m;
 
+  PyEval_InitThreads();
+
   _pyAudio_StreamType.tp_new = PyType_GenericNew;
   if (PyType_Ready(&_pyAudio_StreamType) < 0)
     return;
@@ -2447,6 +2636,18 @@ init_portaudio(void)
 			  paCanNotWriteToAnInputOnlyStream);
   PyModule_AddIntConstant(m, "paIncompatibleStreamHostApi",
 			  paIncompatibleStreamHostApi);
+
+  /* callback constants */
+  PyModule_AddIntConstant(m, "paContinue", paContinue);
+  PyModule_AddIntConstant(m, "paComplete", paComplete);
+  PyModule_AddIntConstant(m, "paAbort", paAbort);
+
+  /* callback status flags */
+  PyModule_AddIntConstant(m, "paInputUnderflow", paInputUnderflow);
+  PyModule_AddIntConstant(m, "paInputOverflow", paInputOverflow);
+  PyModule_AddIntConstant(m, "paOutputUnderflow", paOutputUnderflow);
+  PyModule_AddIntConstant(m, "paOutputOverflow", paOutputOverflow);
+  PyModule_AddIntConstant(m, "paPrimingOutput", paPrimingOutput);
 
 #ifdef MACOSX
   PyModule_AddIntConstant(m, "paMacCoreChangeDeviceParameters",

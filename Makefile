@@ -4,7 +4,7 @@
 
 EPYDOC ?= epydoc
 
-VERSION := 0.2.4
+VERSION := 0.2.6
 DOCS_OUTPUT=docs/
 DOC_NAME := PyAudio-$(VERSION)
 DOC_URL=http://people.csail.mit.edu/hubert/pyaudio/

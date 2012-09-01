@@ -1,7 +1,7 @@
 """
-PyAudio v0.2.4: Python Bindings for PortAudio.
+PyAudio v0.2.6: Python Bindings for PortAudio.
 
-Copyright (c) 2006-2010 Hubert Pham
+Copyright (c) 2006-2012 Hubert Pham
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -30,7 +30,7 @@ from distutils.core import setup, Extension
 import sys
 import os
 
-__version__ = "0.2.4"
+__version__ = "0.2.6"
 
 # Note: distutils will try to locate and link dynamically
 #       against portaudio.

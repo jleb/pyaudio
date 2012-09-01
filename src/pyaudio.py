@@ -1,6 +1,6 @@
 # PyAudio : Python Bindings for PortAudio.
 
-# Copyright (c) 2006-2010 Hubert Pham
+# Copyright (c) 2006-2012 Hubert Pham
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -107,7 +107,7 @@
 """
 
 __author__ = "Hubert Pham"
-__version__ = "0.2.4"
+__version__ = "0.2.6"
 __docformat__ = "restructuredtext en"
 
 import sys

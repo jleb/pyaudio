@@ -9,7 +9,7 @@ chunk = 1024
 PyAudio = pyaudio.PyAudio
 
 if len(sys.argv) < 2:
-    print "Plays a wave file.\n\nUsage: %s filename.wav" % sys.argv[0]
+    print("Plays a wave file.\n\nUsage: %s filename.wav" % sys.argv[0])
     sys.exit(-1)
 
 wf = wave.open(sys.argv[1], 'rb')
@@ -35,6 +35,3 @@ stream.stop_stream()
 stream.close()
 
 p.terminate()
-
-
-

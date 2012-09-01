@@ -25,21 +25,21 @@ stream = p.open(format = FORMAT,
                 input = True,
                 frames_per_buffer = chunk)
 
-print "* recording"
+print("* recording")
 all = []
 
-for i in range(0, RATE / chunk * RECORD_SECONDS):
+for i in range(0, int(RATE / chunk * RECORD_SECONDS)):
     data = stream.read(chunk)
     all.append(data)
-    
-print "* done recording"
+
+print("* done recording")
 
 stream.stop_stream()
 stream.close()
 p.terminate()
 
 # write data to WAVE file
-data = ''.join(all)
+data = b''.join(all)
 wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
 wf.setnchannels(CHANNELS)
 wf.setsampwidth(p.get_sample_size(FORMAT))

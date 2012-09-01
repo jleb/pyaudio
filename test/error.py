@@ -1,9 +1,7 @@
 """
-PyAudio Example:
-
-Test for a variety of error conditions. This
-example demonstrates exception handling with
-PyAudio. """
+PyAudio Example: Test for a variety of error conditions. This example
+demonstrates exception handling with PyAudio.
+"""
 
 import pyaudio
 

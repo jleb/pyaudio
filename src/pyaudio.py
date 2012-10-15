@@ -22,87 +22,160 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-""" PyAudio : Python Bindings for PortAudio v19.
+"""
+PyAudio provides Python bindings for PortAudio, the cross-platform audio I/O
+library. With PyAudio, you can easily use Python to play and record audio on
+a variety of platforms.
 
-:var PaSampleFormat:
-  A list of all PortAudio ``PaSampleFormat`` value constants.
+PyAudio is designed to work with the PortAudio v19 API 2.0.
 
-  See: `paInt32`, `paInt24`, `paInt16`, `paInt8`, and `paUInt8`.
+PyAudio is still super-duper alpha quality. It has run on GNU/Linux,
+Microsoft Windows, and Apple Mac OS X -- but it could use more
+testing.
 
-:var PaHostApiTypeId:
-  A list of all PortAudio ``PaHostApiTypeId`` constants.
+PyAudio is inspired by:
 
-  See: `paInDevelopment`, `paDirectSound`, `paMME`, `paASIO`,
-  `paSoundManager`, `paCoreAudio`, `paOSS`, `paALSA`, `paAL`, *et al...*
+* pyPortAudio/fastaudio: Python bindings for PortAudio v18 API.
+* tkSnack: cross-platform sound toolkit for Tcl/Tk and Python.
 
-:var PaErrorCode:
-  A list of all PortAudio ``PaErrorCode`` constants.
-  Typically, error code constants are included in Python
-  exception objects (as the second argument).
+Example: Blocking Mode Audio I/O
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  See: `paNoError`, `paNotInitialized`, `paUnanticipatedHostError`,
-  *et al...*
+.. literalinclude:: ../test/play_wave.py
 
-:var PaCallbackReturnCode:
-    A list of all PortAudio callback return codes.
+In order to use PyAudio, you first have to instantiate PyAudio using
+:py:func:`pyaudio.PyAudio` (1). This will set up the portaudio system. You are
+now ready to query sound devices or open streams.
 
-    See: `paContinue`, `paComplete`, `paAbort`
+In order to record or play audio, you have to open a stream on the desired
+device with the desired audio parameters using :py:func:`pyaudio.PyAudio.open`
+(2). This will set up a portaudio :py:class:`pyaudio.Stream` to play or record
+audio.
 
-:var PaCallbackStatus:
-    A list of all PortAudio callback status codes.
+With all the setup done, you can play audio by writing audio data to the stream
+using :py:func:`pyaudio.Stream.write` or read audio data from the stream using
+:py:func:`pyaudio.Stream.read`. (3)
 
-    See: `paInputUnderflow`, `paInputOverflow`, `paOutputUnderflow`,
-    `paOutputOverflow`, `paPrimingOutput`
+Note that each :py:func:`pyaudio.Stream.write` or :py:func:`pyaudio.Stream.read`
+will not return until all the given/requested frames have been played/recorded.
+This is what is called "blocking mode".
 
-:group PortAudio Constants:
-  PaSampleFormat, PaHostApiTypeId, PaErrorCode, PaCallbackReturnCode
+If you want to generate your audio data on the fly or immediately react on audio
+data you recorded, you should use callback mode outlined below.
 
-:group PaSampleFormat Values:
-  paFloat32, paInt32, paInt24, paInt16,
-  paInt8, paUInt8, paCustomFormat
+When you are done using the stream, you have to stop it using
+:py:func:`pyaudio.Stream.stop_stream` and then close it using
+:py:func:`pyaudio.Stream.close`. (4)
 
-:group PaHostApiTypeId Values:
-  paInDevelopment, paDirectSound, paMME, paASIO,
-  paSoundManager, paCoreAudio, paOSS, paALSA
-  paAL, paBeOS, paWDMKS, paJACK, paWASAPI, paNoDevice
+Finally, you should finish your portaudio session using
+:py:func:`pyaudio.PyAudio.terminate` (5)
 
-:group PaErrorCode Values:
-  paNoError,
-  paNotInitialized, paUnanticipatedHostError,
-  paInvalidChannelCount, paInvalidSampleRate,
-  paInvalidDevice, paInvalidFlag,
-  paSampleFormatNotSupported, paBadIODeviceCombination,
-  paInsufficientMemory, paBufferTooBig,
-  paBufferTooSmall, paNullCallback,
-  paBadStreamPtr, paTimedOut,
-  paInternalError, paDeviceUnavailable,
-  paIncompatibleHostApiSpecificStreamInfo, paStreamIsStopped,
-  paStreamIsNotStopped, paInputOverflowed,
-  paOutputUnderflowed, paHostApiNotFound,
-  paInvalidHostApi, paCanNotReadFromACallbackStream,
-  paCanNotWriteToACallbackStream,
-  paCanNotReadFromAnOutputOnlyStream,
-  paCanNotWriteToAnInputOnlyStream,
-  paIncompatibleStreamHostApi
+Example: Callback Mode Audio I/O
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:group PaCallbackReturnCode Values:
-    paContinue, paComplete, paAbort
+.. literalinclude:: ../test/play_wave_callback.py
 
-:group PaCallbackStatus Values:
-    paInputUnderflow, paInputOverflow, paOutputUnderflow,
-    paOutputOverflow, paPrimingOutput
+In order to use PyAudio, you first have to instantiate PyAudio using
+:py:func:`pyaudio.PyAudio` (1). This will set up the portaudio system. You are
+now ready to query sound devices or open streams. This step is the same as above.
 
-:group Stream Conversion Convenience Functions:
-  get_sample_size, get_format_from_width
+In contrast to blocking mode, in callback mode, portaudio itself will call a
+function whenever it needs new audio data or has new audio data available. Note
+that this function is called on its own thread. This function has the following
+signature ``callback(<input_data>, <frame_count>, <time_info>, <status_flag>)``
+and must return a tuple containing ``frame_count`` frames of audio data and a
+flag signifying whether there are more frames to play/record or not. (2)
 
-:group PortAudio version:
-  get_portaudio_version, get_portaudio_version_text
+In order to record or play audio, you have to open a stream on the desired
+device with the desired audio parameters using :py:func:`pyaudio.PyAudio.open`
+(4). This will set up a portaudio :py:class:`pyaudio.Stream` to play or record
+audio. Note that for callback mode, you will have to pass the callback function
+as the `stream_callback` parameter.
 
-:sort: PaSampleFormat, PaHostApiTypeId, PaErrorCode, PaCallbackReturnCode,
-       PaCallbackStatus
+You can now start processing the audio stream using
+:py:func:`pyaudio.Stream.start_stream` (4).
+This will now call the callback function repeatedly until it returns
+:py:data:`pyaudio.paComplete`.
 
-:sort: PortAudio Constants, PaSampleFormat Values,
-       PaHostApiTypeId Values, PaErrorCode Values
+Note that since the callback is called on a different thread, the main thread
+has to be kept busy in the meantime. The easiest way to do that is to just sleep
+until it is done. (5)
+
+When you are done using the stream, you have to stop it using
+:py:func:`pyaudio.Stream.stop_stream` and then close it using
+:py:func:`pyaudio.Stream.close`. (6)
+
+Finally, you should finish your portaudio session using
+:py:func:`pyaudio.PyAudio.terminate` (7)
+
+Overview
+^^^^^^^^
+
+**Classes**
+  :py:class:`PyAudio`, :py:class:`Stream`, :py:class:`PaMacCoreStreamInfo`
+
+**Stream Conversion Convenience Functions**
+  :py:func:`get_sample_size`, :py:func:`get_format_from_width`
+
+**PortAudio version**
+  :py:func:`get_portaudio_version`, :py:func:`get_portaudio_version_text`
+
+.. |PaSampleFormat| replace:: :ref:`PortAudio Sample Format <PaSampleFormat>`
+.. _PaSampleFormat:
+
+**Portaudio Sample Formats**
+  :py:data:`paFloat32`, :py:data:`paInt32`, :py:data:`paInt24`, :py:data:`paInt16`,
+  :py:data:`paInt8`, :py:data:`paUInt8`, :py:data:`paCustomFormat`
+
+.. |PaHostAPI| replace:: :ref:`PortAudio Host API <PaHostAPI>`
+.. _PaHostAPI:
+
+**PortAudio Host APIs**
+  :py:data:`paInDevelopment`, :py:data:`paDirectSound`, :py:data:`paMME`,
+  :py:data:`paASIO`, :py:data:`paSoundManager`, :py:data:`paCoreAudio`,
+  :py:data:`paOSS`, :py:data:`paALSA`, :py:data:`paAL`, :py:data:`paBeOS`,
+  :py:data:`paWDMKS`, :py:data:`paJACK`, :py:data:`paWASAPI`,
+  :py:data:`paNoDevice`
+
+.. |PaErrorCode| replace:: :ref:`PortAudio Error Code <PaErrorCode>`
+.. _PaErrorCode:
+
+**PortAudio Error Codes**
+  :py:data:`paNoError`, :py:data:`paNotInitialized`,
+  :py:data:`paUnanticipatedHostError`, :py:data:`paInvalidChannelCount`,
+  :py:data:`paInvalidSampleRate`, :py:data:`paInvalidDevice`,
+  :py:data:`paInvalidFlag`, :py:data:`paSampleFormatNotSupported`,
+  :py:data:`paBadIODeviceCombination`, :py:data:`paInsufficientMemory`,
+  :py:data:`paBufferTooBig`, :py:data:`paBufferTooSmall`,
+  :py:data:`paNullCallback`, :py:data:`paBadStreamPtr`,
+  :py:data:`paTimedOut`, :py:data:`paInternalError`,
+  :py:data:`paDeviceUnavailable`,
+  :py:data:`paIncompatibleHostApiSpecificStreamInfo`,
+  :py:data:`paStreamIsStopped`, :py:data:`paStreamIsNotStopped`,
+  :py:data:`paInputOverflowed`, :py:data:`paOutputUnderflowed`,
+  :py:data:`paHostApiNotFound`, :py:data:`paInvalidHostApi`,
+  :py:data:`paCanNotReadFromACallbackStream`,
+  :py:data:`paCanNotWriteToACallbackStream`,
+  :py:data:`paCanNotReadFromAnOutputOnlyStream`,
+  :py:data:`paCanNotWriteToAnInputOnlyStream`,
+  :py:data:`paIncompatibleStreamHostApi`
+
+.. |PaCallbackReturnCodes| replace:: :ref:`PortAudio Callback Return Code <PaCallbackReturnCodes>`
+.. _PaCallbackReturnCodes:
+
+**PortAudio Callback Return Codes**
+  :py:data:`paContinue`, :py:data:`paComplete`, :py:data:`paAbort`
+
+.. |PaCallbackFlags| replace:: :ref:`PortAutio Callback Flag <PaCallbackFlags>`
+.. _PaCallbackFlags:
+
+**PortAudio Callback Flags**
+  :py:data:`paInputUnderflow`, :py:data:`paInputOverflow`,
+  :py:data:`paOutputUnderflow`, :py:data:`paOutputOverflow`,
+  :py:data:`paPrimingOutput`
+
+Details
+^^^^^^^
 
 """
 
@@ -116,7 +189,7 @@ import sys
 try:
     import _portaudio as pa
 except ImportError:
-    print("Please build and install the PortAudio Python " +\
+    print("Please build and install the PortAudio Python " +
           "bindings first.")
     sys.exit(-1)
 
@@ -126,111 +199,76 @@ except ImportError:
 
 ##### PaSampleFormat Sample Formats #####
 
-paFloat32 = pa.paFloat32
-paInt32 = pa.paInt32
-paInt24 = pa.paInt24
-paInt16 = pa.paInt16
-paInt8 = pa.paInt8
-paUInt8 = pa.paUInt8
-paCustomFormat = pa.paCustomFormat
-
-# group them together for epydoc
-PaSampleFormat = ['paFloat32', 'paInt32', 'paInt24', 'paInt16',
-                  'paInt8', 'paUInt8', 'paCustomFormat']
+paFloat32      = pa.paFloat32      #: 32 bit float
+paInt32        = pa.paInt32        #: 32 bit int
+paInt24        = pa.paInt24        #: 24 bit int
+paInt16        = pa.paInt16        #: 16 bit int
+paInt8         = pa.paInt8         #: 8 bit int
+paUInt8        = pa.paUInt8        #: 8 bit unsigned int
+paCustomFormat = pa.paCustomFormat #: a custom data format
 
 ###### HostAPI TypeId #####
 
-paInDevelopment = pa.paInDevelopment
-paDirectSound = pa.paDirectSound
-paMME = pa.paMME
-paASIO = pa.paASIO
-paSoundManager = pa.paSoundManager
-paCoreAudio = pa.paCoreAudio
-paOSS = pa.paOSS
-paALSA = pa.paALSA
-paAL = pa.paAL
-paBeOS = pa.paBeOS
-paWDMKS = pa.paWDMKS
-paJACK = pa.paJACK
-paWASAPI = pa.paWASAPI
-paNoDevice = pa.paNoDevice
-
-# group them together for epydoc
-PaHostApiTypeId = ['paInDevelopment', 'paDirectSound', 'paMME',
-                   'paASIO', 'paSoundManager', 'paCoreAudio',
-                   'paOSS', 'paALSA', 'paAL', 'paBeOS',
-                   'paWDMKS', 'paJACK', 'paWASAPI', 'paNoDevice']
+paInDevelopment = pa.paInDevelopment #: Still in development
+paDirectSound   = pa.paDirectSound   #: DirectSound (Windows only)
+paMME           = pa.paMME           #: Multimedia Extension (Windows only)
+paASIO          = pa.paASIO          #: Steinberg Audio Stream Input/Output
+paSoundManager  = pa.paSoundManager  #: SoundManager (OSX only)
+paCoreAudio     = pa.paCoreAudio     #: CoreAudio (OSX only)
+paOSS           = pa.paOSS           #: Open Sound System (Linux only)
+paALSA          = pa.paALSA          #: Advanced Linux Sound Architecture (Linux only)
+paAL            = pa.paAL            #: Open Audio Library
+paBeOS          = pa.paBeOS          #: BeOS Sound System
+paWDMKS         = pa.paWDMKS         #: Windows Driver Model (Windows only)
+paJACK          = pa.paJACK          #: JACK Audio Connection Kit
+paWASAPI        = pa.paWASAPI        #: Windows Vista Audio stack architecture
+paNoDevice      = pa.paNoDevice      #: Not actually an audio device
 
 ###### portaudio error codes #####
 
-paNoError = pa.paNoError
-paNotInitialized = pa.paNotInitialized
-paUnanticipatedHostError = pa.paUnanticipatedHostError
-paInvalidChannelCount = pa.paInvalidChannelCount
-paInvalidSampleRate = pa.paInvalidSampleRate
-paInvalidDevice = pa.paInvalidDevice
-paInvalidFlag = pa.paInvalidFlag
-paSampleFormatNotSupported = pa.paSampleFormatNotSupported
-paBadIODeviceCombination = pa.paBadIODeviceCombination
-paInsufficientMemory = pa.paInsufficientMemory
-paBufferTooBig = pa.paBufferTooBig
-paBufferTooSmall = pa.paBufferTooSmall
-paNullCallback = pa.paNullCallback
-paBadStreamPtr = pa.paBadStreamPtr
-paTimedOut = pa.paTimedOut
-paInternalError = pa.paInternalError
-paDeviceUnavailable = pa.paDeviceUnavailable
+paNoError                               = pa.paNoError
+paNotInitialized                        = pa.paNotInitialized
+paUnanticipatedHostError                = pa.paUnanticipatedHostError
+paInvalidChannelCount                   = pa.paInvalidChannelCount
+paInvalidSampleRate                     = pa.paInvalidSampleRate
+paInvalidDevice                         = pa.paInvalidDevice
+paInvalidFlag                           = pa.paInvalidFlag
+paSampleFormatNotSupported              = pa.paSampleFormatNotSupported
+paBadIODeviceCombination                = pa.paBadIODeviceCombination
+paInsufficientMemory                    = pa.paInsufficientMemory
+paBufferTooBig                          = pa.paBufferTooBig
+paBufferTooSmall                        = pa.paBufferTooSmall
+paNullCallback                          = pa.paNullCallback
+paBadStreamPtr                          = pa.paBadStreamPtr
+paTimedOut                              = pa.paTimedOut
+paInternalError                         = pa.paInternalError
+paDeviceUnavailable                     = pa.paDeviceUnavailable
 paIncompatibleHostApiSpecificStreamInfo = pa.paIncompatibleHostApiSpecificStreamInfo
-paStreamIsStopped = pa.paStreamIsStopped
-paStreamIsNotStopped = pa.paStreamIsNotStopped
-paInputOverflowed = pa.paInputOverflowed
-paOutputUnderflowed = pa.paOutputUnderflowed
-paHostApiNotFound = pa.paHostApiNotFound
-paInvalidHostApi = pa.paInvalidHostApi
-paCanNotReadFromACallbackStream = pa.paCanNotReadFromACallbackStream
-paCanNotWriteToACallbackStream = pa.paCanNotWriteToACallbackStream
-paCanNotReadFromAnOutputOnlyStream = pa.paCanNotReadFromAnOutputOnlyStream
-paCanNotWriteToAnInputOnlyStream = pa.paCanNotWriteToAnInputOnlyStream
-paIncompatibleStreamHostApi = pa.paIncompatibleStreamHostApi
-
-# group them together for epydoc
-PaErrorCode = ['paNoError',
-               'paNotInitialized', 'paUnanticipatedHostError',
-               'paInvalidChannelCount', 'paInvalidSampleRate',
-               'paInvalidDevice', 'paInvalidFlag',
-               'paSampleFormatNotSupported', 'paBadIODeviceCombination',
-               'paInsufficientMemory', 'paBufferTooBig',
-               'paBufferTooSmall', 'paNullCallback',
-               'paBadStreamPtr', 'paTimedOut',
-               'paInternalError', 'paDeviceUnavailable',
-               'paIncompatibleHostApiSpecificStreamInfo', 'paStreamIsStopped',
-               'paStreamIsNotStopped', 'paInputOverflowed',
-               'paOutputUnderflowed', 'paHostApiNotFound',
-               'paInvalidHostApi', 'paCanNotReadFromACallbackStream',
-               'paCanNotWriteToACallbackStream',
-               'paCanNotReadFromAnOutputOnlyStream',
-               'paCanNotWriteToAnInputOnlyStream',
-               'paIncompatibleStreamHostApi']
+paStreamIsStopped                       = pa.paStreamIsStopped
+paStreamIsNotStopped                    = pa.paStreamIsNotStopped
+paInputOverflowed                       = pa.paInputOverflowed
+paOutputUnderflowed                     = pa.paOutputUnderflowed
+paHostApiNotFound                       = pa.paHostApiNotFound
+paInvalidHostApi                        = pa.paInvalidHostApi
+paCanNotReadFromACallbackStream         = pa.paCanNotReadFromACallbackStream
+paCanNotWriteToACallbackStream          = pa.paCanNotWriteToACallbackStream
+paCanNotReadFromAnOutputOnlyStream      = pa.paCanNotReadFromAnOutputOnlyStream
+paCanNotWriteToAnInputOnlyStream        = pa.paCanNotWriteToAnInputOnlyStream
+paIncompatibleStreamHostApi             = pa.paIncompatibleStreamHostApi
 
 ###### portaudio callback return codes ######
-paContinue = pa.paContinue
-paComplete = pa.paComplete
-paAbort = pa.paAbort
 
-# group them together for epydoc
-PaCallbackReturnCode = ['paContinue', 'paComplete', 'paAbort']
+paContinue = pa.paContinue #: There is more audio data to come
+paComplete = pa.paComplete #: This was the last block of audio data
+paAbort    = pa.paAbort    #: An error ocurred, stop playback/recording
 
 ###### portaudio callback flags ######
-paInputUnderflow = pa.paInputUnderflow
-paInputOverflow = pa.paInputOverflow
-paOutputUnderflow = pa.paOutputUnderflow
-paOutputOverflow = pa.paOutputOverflow
-paPrimingOutput = pa.paPrimingOutput
 
-# group them together for epydoc
-PaCallbackStatus = ['paInputUnderflow', 'paInputOverflow',
-                    'paOutputUnderflow', 'paOutputOverflow',
-                    'paPrimingOutput']
+paInputUnderflow  = pa.paInputUnderflow  #: Buffer underflow in input
+paInputOverflow   = pa.paInputOverflow   #: Buffer overflow in input
+paOutputUnderflow = pa.paOutputUnderflow #: Buffer underflow in output
+paOutputOverflow  = pa.paOutputOverflow  #: Buffer overflow in output
+paPrimingOutput   = pa.paPrimingOutput   #: Just priming, not playing yet
 
 ############################################################
 # Convenience Functions
@@ -239,10 +277,10 @@ PaCallbackStatus = ['paInputUnderflow', 'paInputOverflow',
 def get_sample_size(format):
     """
     Returns the size (in bytes) for the specified
-    sample `format` (a `PaSampleFormat` constant).
+    sample *format*.
 
-    :param `format`:
-       PortAudio sample format constant `PaSampleFormat`.
+    :param format:
+       A |PaSampleFormat| constant.
 
     :raises ValueError: Invalid specified `format`.
 
@@ -254,16 +292,16 @@ def get_sample_size(format):
 def get_format_from_width(width, unsigned = True):
     """
     Returns a PortAudio format constant for
-    the specified `width`.
+    the specified *width*.
 
-    :param `width`:
+    :param width:
       The desired sample width in bytes (1, 2, 3, or 4)
-    :param `unsigned`:
+    :param unsigned:
       For 1 byte width, specifies signed or unsigned
       format.
 
-    :raises ValueError: for invalid `width`
-    :rtype: `PaSampleFormat`
+    :raises ValueError: for invalid *width*
+    :rtype: A |PaSampleFormat| constant
 
     """
 
@@ -311,20 +349,23 @@ def get_portaudio_version_text():
 class Stream:
 
     """
-    PortAudio Stream Wrapper. Use `PyAudio.open` to make a new
-    `Stream`.
+    PortAudio Stream Wrapper. Use :py:func:`PyAudio.open` to make a new
+    :py:class:`Stream`.
 
-    :group Opening and Closing:
-      __init__, close
+    **Opening and Closing**
+      :py:func:`__init__`, :py:func:`close`
 
-    :group Stream Info:
-      get_input_latency, get_output_latency, get_time, get_cpu_load
+    **Stream Info**
+      :py:func:`get_input_latency`, :py:func:`get_output_latency`,
+      :py:func:`get_time`, :py:func:`get_cpu_load`
 
-    :group Stream Management:
-      start_stream, stop_stream, is_active, is_stopped
+    **Stream Management**
+      :py:func:`start_stream`, :py:func:`stop_stream`, :py:func:`is_active`,
+      :py:func:`is_stopped`
 
-    :group Input Output:
-      write, read, get_read_available, get_write_available
+    **Input Output**
+      :py:func:`write`, :py:func:`read`, :py:func:`get_read_available`,
+      :py:func:`get_write_available`
 
     """
 
@@ -344,65 +385,74 @@ class Stream:
                  stream_callback = None):
         """
         Initialize a stream; this should be called by
-        `PyAudio.open`. A stream can either be input, output, or both.
+        :py:func:`PyAudio.open`. A stream can either be input, output, or both.
 
 
-        :param `PA_manager`: A reference to the managing `PyAudio` instance
+        :param `PA_manager`: A reference to the managing :py:class:`PyAudio`
+            instance
         :param `rate`: Sampling rate
         :param `channels`: Number of channels
-        :param `format`: Sampling size and format. See `PaSampleFormat`.
+        :param `format`: Sampling size and format. See |PaSampleFormat|.
         :param `input`: Specifies whether this is an input stream.
-            Defaults to False.
+            Defaults to ``False``.
         :param `output`: Specifies whether this is an output stream.
-            Defaults to False.
+            Defaults to ``False``.
         :param `input_device_index`: Index of Input Device to use.
-            Unspecified (or None) uses default device.
-            Ignored if `input` is False.
+            Unspecified (or ``None``) uses default device.
+            Ignored if `input` is ``False``.
         :param `output_device_index`:
             Index of Output Device to use.
-            Unspecified (or None) uses the default device.
-            Ignored if `output` is False.
+            Unspecified (or ``None``) uses the default device.
+            Ignored if `output` is ``False``.
         :param `frames_per_buffer`: Specifies the number of frames per buffer.
         :param `start`: Start the stream running immediately.
-            Defaults to True. In general, there is no reason to set
-            this to false.
+            Defaults to ``True``. In general, there is no reason to set
+            this to ``False``.
         :param `input_host_api_specific_stream_info`: Specifies a host API
             specific stream information data structure for input.
-            See `PaMacCoreStreamInfo`.
+            See :py:class:`PaMacCoreStreamInfo`.
         :param `output_host_api_specific_stream_info`: Specifies a host API
             specific stream information data structure for output.
-            See `PaMacCoreStreamInfo`.
+            See :py:class:`PaMacCoreStreamInfo`.
         :param `stream_callback`: Specifies a callback function for
             *non-blocking* (callback) operation.  Default is
             ``None``, which indicates *blocking* operation (i.e.,
-            `Stream.read` and `Stream.write`).  To use non-blocking operation,
+            :py:func:`Stream.read` and :py:func:`Stream.write`).  To use
+            non-blocking operation,
             specify a callback that conforms to the following signature:
 
-            .. python::
+            .. code-block:: python
 
                callback(in_data,      # recorded data if input=True; else None
                         frame_count,  # number of frames
                         time_info,    # dictionary
                         status_flags) # PaCallbackStatus
 
-            ``time_info`` is a dictionary with the following keys:
-            ``input_buffer_adc_time``, ``current_time``, and
-            ``output_buffer_dac_time``.  See the PortAudio
-            documentation for their meanings.
+            :param `in_data`: Recorded audio data from the ADC
+            :param `frame_count`: The number of frames in the input/output
+                buffers
+            :param `time_info`: A dictionary with the following keys:
+                ``input_buffer_adc_time``, ``current_time``, and
+                ``output_buffer_dac_time``.  See the PortAudio
+                documentation for their meanings.
+            :param `status_flag`: A |PaCallbackFlags| constant if there was an
+                issue
 
             The callback must return a tuple:
 
-            .. python::
+            .. code-block:: python
 
                 (out_data, flag)
 
-            ``out_data`` is a string whose length should be the
-            (``frame_count * channels * bytes-per-channel``) if
-            ``output=True`` or ``None`` if ``output=False``.  ``flag``
-            must be either `paContinue`, `paComplete` or `paAbort`.
+            :param `out_data`: A byte array whose length should be the
+                (``frame_count * channels * bytes-per-channel``) if
+                ``output=True`` or ``None`` if ``output=False``.  ``flag``
+                must be either :py:data:`paContinue`, :py:data:`paComplete` or
+                :py:data:`paAbort`.
+                (One of |PaCallbackReturnCodes|)
 
             When ``output=True`` and ``out_data`` does not contain at
-            least ``frame_count`` frames, `paComplete` is assumed for
+            least ``frame_count`` frames, :py:data:`paComplete` is assumed for
             ``flag``.
 
             **Note:** ``stream_callback`` is called in a separate
@@ -414,10 +464,11 @@ class Stream:
                the main thread, and
             3. return `paAbort` to PortAudio to stop the stream.
 
-            **Note:** Do not call `Stream.read` or `Stream.write` if using
-            non-blocking operation.
+            **Note:** Do not call :py:func:`Stream.read` or
+            :py:func:`Stream.write` if using non-blocking operation.
 
-            **See:** PortAudio's callback signature for additional details: http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a8a60fb2a5ec9cbade3f54a9c978e2710
+            **See:** PortAudio's callback signature for additional
+            details: http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a8a60fb2a5ec9cbade3f54a9c978e2710
 
         :raise ValueError: Neither input nor output
          are set True.
@@ -552,7 +603,7 @@ class Stream:
 
         """ Stop the stream. Once the stream is stopped,
         one may not call write or read. However, one may
-        call start_stream to resume the stream. """
+        call :py:func:`start_stream` to resume the stream. """
 
         if not self._is_running:
             return
@@ -681,22 +732,24 @@ class PyAudio:
 
     Use this class to open and close streams.
 
-    :group Stream Management:
-      open, close
+    **Stream Management**
+      :py:func:`open`, :py:func:`close`
 
-    :group Host API:
-      get_host_api_count, get_default_host_api_info,
-      get_host_api_info_by_type, get_host_api_info_by_index,
-      get_device_info_by_host_api_device_index
+    **Host API**
+      :py:func:`get_host_api_count`, :py:func:`get_default_host_api_info`,
+      :py:func:`get_host_api_info_by_type`, :py:func:`get_host_api_info_by_index`,
+      :py:func:`get_device_info_by_host_api_device_index`
 
-    :group Device API:
-      get_device_count, is_format_supported,
-      get_default_input_device_info,
-      get_default_output_device_info,
-      get_device_info_by_index
+    **Device API**
+      :py:func:`get_device_count`, :py:func:`is_format_supported`,
+      :py:func:`get_default_input_device_info`,
+      :py:func:`get_default_output_device_info`,
+      :py:func:`get_device_info_by_index`
 
-    :group Stream Format Conversion:
-      get_sample_size, get_format_from_width
+    **Stream Format Conversion**
+      :py:func:`get_sample_size`, :py:func:`get_format_from_width`
+
+    **Details**
 
     """
 
@@ -734,11 +787,11 @@ class PyAudio:
     def get_sample_size(self, format):
         """
         Returns the size (in bytes) for the specified
-        sample `format` (a `PaSampleFormat` constant).
+        sample `format` (a |PaSampleFormat| constant).
 
 
         :param `format`:
-           Sample format constant (`PaSampleFormat`).
+           A |PaSampleFormat| constant.
 
         :raises ValueError: Invalid specified `format`.
 
@@ -760,7 +813,7 @@ class PyAudio:
 
         :raises ValueError: for invalid `width`
 
-        :rtype: `PaSampleFormat`
+        :rtype: A |PaSampleFormat| constant.
         """
 
         if width == 1:
@@ -785,9 +838,9 @@ class PyAudio:
     def open(self, *args, **kwargs):
         """
         Open a new stream. See constructor for
-        `Stream.__init__` for parameter details.
+        :py:func:`Stream.__init__` for parameter details.
 
-        :returns: `Stream` """
+        :returns: A new :py:class:`Stream` """
 
         stream = Stream(self, *args, **kwargs)
         self._streams.add(stream)
@@ -796,10 +849,10 @@ class PyAudio:
 
     def close(self, stream):
         """
-        Close a stream. Typically use `Stream.close` instead.
+        Close a stream. Typically use :py:func:`Stream.close` instead.
 
         :param `stream`:
-           An instance of the `Stream` object.
+           An instance of the :py:class:`Stream` object.
 
         :raises ValueError: if stream does not exist.
         """
@@ -815,7 +868,7 @@ class PyAudio:
         Internal method. Removes a stream.
 
         :param `stream`:
-           An instance of the `Stream` object.
+           An instance of the :py:class:`Stream` object.
 
         """
 
@@ -829,7 +882,7 @@ class PyAudio:
 
     def get_host_api_count(self):
         """
-        Return the number of PortAudio Host APIs.
+        Return the number of available PortAudio Host APIs.
 
         :rtype: int
         """
@@ -860,7 +913,7 @@ class PyAudio:
 
 
         :param `host_api_type`:
-           The desired Host API (`PaHostApiTypeId` constant).
+           The desired |PaHostAPI|
 
         :raises IOError: for invalid `host_api_type`
         :rtype: dict
@@ -958,26 +1011,26 @@ class PyAudio:
         :param `rate`:
            Specifies the desired rate (in Hz)
         :param `input_device`:
-           The input device index. Specify `None` (default) for
+           The input device index. Specify ``None`` (default) for
            half-duplex output-only streams.
         :param `input_channels`:
            The desired number of input channels. Ignored if
-           `input_device` is not specified (or `None`).
+           `input_device` is not specified (or ``None``).
         :param `input_format`:
            PortAudio sample format constant defined
            in this module
         :param `output_device`:
-           The output device index. Specify `None` (default) for
+           The output device index. Specify ``None`` (default) for
            half-duplex input-only streams.
         :param `output_channels`:
            The desired number of output channels. Ignored if
-           `input_device` is not specified (or `None`).
+           `input_device` is not specified (or ``None``).
         :param `output_format`:
-           PortAudio sample format constant (`PaSampleFormat`).
+           |PaSampleFormat| constant.
 
         :rtype: bool
         :raises ValueError: tuple containing:
-           (error string, PortAudio error code `PaErrorCode`).
+           (error string, |PaErrorCode|).
 
         """
 
@@ -1085,34 +1138,44 @@ else:
         Mac OS X-only: PaMacCoreStreamInfo is a PortAudio Host API
         Specific Stream Info data structure for specifying Mac OS
         X-only settings. Instantiate this class (if desired) and pass
-        the instance as the argument in `PyAudio.open` to parameters
+        the instance as the argument in :py:func:`PyAudio.open` to parameters
         ``input_host_api_specific_stream_info`` or
-        ``output_host_api_specific_stream_info``. (See `Stream.__init__`.)
+        ``output_host_api_specific_stream_info``. (See :py:func:`Stream.__init__`.)
 
         :note: Mac OS X only.
 
-        :group Flags (constants):
-          paMacCoreChangeDeviceParameters, paMacCoreFailIfConversionRequired,
-          paMacCoreConversionQualityMin, paMacCoreConversionQualityMedium,
-          paMacCoreConversionQualityLow, paMacCoreConversionQualityHigh,
-          paMacCoreConversionQualityMax, paMacCorePlayNice,
-          paMacCorePro, paMacCoreMinimizeCPUButPlayNice, paMacCoreMinimizeCPU
+        .. |PaMacCoreFlags| replace:: :ref:`PortAudio Mac Core Flags <PaMacCoreFlags>`
+        .. _PaMacCoreFlags:
 
-        :group Settings:
-          get_flags, get_channel_map
+        **PortAudio Mac Core Flags**
+          :py:data:`paMacCoreChangeDeviceParameters`,
+          :py:data:`paMacCoreFailIfConversionRequired`,
+          :py:data:`paMacCoreConversionQualityMin`,
+          :py:data:`paMacCoreConversionQualityMedium`,
+          :py:data:`paMacCoreConversionQualityLow`,
+          :py:data:`paMacCoreConversionQualityHigh`,
+          :py:data:`paMacCoreConversionQualityMax`,
+          :py:data:`paMacCorePlayNice`,
+          :py:data:`paMacCorePro`,
+          :py:data:`paMacCoreMinimizeCPUButPlayNice`,
+          :py:data:`paMacCoreMinimizeCPU`
 
-        """
-        paMacCoreChangeDeviceParameters = pa.paMacCoreChangeDeviceParameters
+        **Settings**
+          :py:func:`get_flags`, :py:func:`get_channel_map`
+
+          """
+
+        paMacCoreChangeDeviceParameters   = pa.paMacCoreChangeDeviceParameters
         paMacCoreFailIfConversionRequired = pa.paMacCoreFailIfConversionRequired
-        paMacCoreConversionQualityMin = pa.paMacCoreConversionQualityMin
-        paMacCoreConversionQualityMedium = pa.paMacCoreConversionQualityMedium
-        paMacCoreConversionQualityLow = pa.paMacCoreConversionQualityLow
-        paMacCoreConversionQualityHigh = pa.paMacCoreConversionQualityHigh
-        paMacCoreConversionQualityMax = pa.paMacCoreConversionQualityMax
-        paMacCorePlayNice = pa.paMacCorePlayNice
-        paMacCorePro = pa.paMacCorePro
-        paMacCoreMinimizeCPUButPlayNice = pa.paMacCoreMinimizeCPUButPlayNice
-        paMacCoreMinimizeCPU = pa.paMacCoreMinimizeCPU
+        paMacCoreConversionQualityMin     = pa.paMacCoreConversionQualityMin
+        paMacCoreConversionQualityMedium  = pa.paMacCoreConversionQualityMedium
+        paMacCoreConversionQualityLow     = pa.paMacCoreConversionQualityLow
+        paMacCoreConversionQualityHigh    = pa.paMacCoreConversionQualityHigh
+        paMacCoreConversionQualityMax     = pa.paMacCoreConversionQualityMax
+        paMacCorePlayNice                 = pa.paMacCorePlayNice
+        paMacCorePro                      = pa.paMacCorePro
+        paMacCoreMinimizeCPUButPlayNice   = pa.paMacCoreMinimizeCPUButPlayNice
+        paMacCoreMinimizeCPU              = pa.paMacCoreMinimizeCPU
 
         def __init__(self, flags = None, channel_map = None):
             """
@@ -1120,8 +1183,8 @@ else:
             documentation for more details on these parameters; they are
             passed almost verbatim to the PortAudio library.
 
-            :param `flags`: paMacCore* flags OR'ed together.
-                See `PaMacCoreStreamInfo`.
+            :param `flags`: |PaMacCoreFlags| OR'ed together.
+                See :py:class:`PaMacCoreStreamInfo`.
             :param `channel_map`: An array describing the channel mapping.
                 See PortAudio documentation for usage.
             """

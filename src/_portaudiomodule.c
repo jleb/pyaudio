@@ -1651,7 +1651,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
   int output_device_index = -1;
   PyObject *input_device_index_arg = NULL;
   PyObject *output_device_index_arg = NULL;
-  PyFunctionObject *stream_callback = NULL;
+  PyObject *stream_callback = NULL;
   PaSampleFormat format;
   PaError err;
 
@@ -1687,9 +1687,9 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs,
 #ifdef MACOSX
-				   "iik|iiOOiO!O!O!",
+				   "iik|iiOOiO!O!O",
 #else
-				   "iik|iiOOiOOO!",
+				   "iik|iiOOiOOO",
 #endif
 				   kwlist,
 				   &rate, &channels, &format,
@@ -1705,11 +1705,14 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 				   &_pyAudio_MacOSX_hostApiSpecificStreamInfoType,
 #endif
 				   &outputHostSpecificStreamInfo,
-                   &PyFunction_Type,
-                   &stream_callback))
+                                   &stream_callback))
 
     return NULL;
 
+  if (stream_callback && (PyCallable_Check(stream_callback) == 0)) {
+      PyErr_SetString(PyExc_TypeError, "stream_callback must be callable");
+      return NULL;
+  }
 
   /* check to see if device indices were specified */
   if ((input_device_index_arg == NULL) ||

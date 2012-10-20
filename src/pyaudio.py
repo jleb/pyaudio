@@ -23,93 +23,17 @@
 
 
 """
-PyAudio provides Python bindings for PortAudio, the cross-platform audio I/O
-library. With PyAudio, you can easily use Python to play and record audio on
-a variety of platforms.
-
-PyAudio is designed to work with the PortAudio v19 API 2.0.
-
-PyAudio is still super-duper alpha quality. It has run on GNU/Linux,
-Microsoft Windows, and Apple Mac OS X -- but it could use more
-testing.
-
-PyAudio is inspired by:
+PyAudio provides Python bindings for PortAudio, the cross-platform
+audio I/O library. With PyAudio, you can easily use Python to play and
+record audio on a variety of platforms.  PyAudio is inspired by:
 
 * pyPortAudio/fastaudio: Python bindings for PortAudio v18 API.
 * tkSnack: cross-platform sound toolkit for Tcl/Tk and Python.
 
-Example: Blocking Mode Audio I/O
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. literalinclude:: ../test/play_wave.py
-
-In order to use PyAudio, you first have to instantiate PyAudio using
-:py:func:`pyaudio.PyAudio` (1). This will set up the portaudio system. You are
-now ready to query sound devices or open streams.
-
-In order to record or play audio, you have to open a stream on the desired
-device with the desired audio parameters using :py:func:`pyaudio.PyAudio.open`
-(2). This will set up a portaudio :py:class:`pyaudio.Stream` to play or record
-audio.
-
-With all the setup done, you can play audio by writing audio data to the stream
-using :py:func:`pyaudio.Stream.write` or read audio data from the stream using
-:py:func:`pyaudio.Stream.read`. (3)
-
-Note that each :py:func:`pyaudio.Stream.write` or :py:func:`pyaudio.Stream.read`
-will not return until all the given/requested frames have been played/recorded.
-This is what is called "blocking mode".
-
-If you want to generate your audio data on the fly or immediately react on audio
-data you recorded, you should use callback mode outlined below.
-
-When you are done using the stream, you have to stop it using
-:py:func:`pyaudio.Stream.stop_stream` and then close it using
-:py:func:`pyaudio.Stream.close`. (4)
-
-Finally, you should finish your portaudio session using
-:py:func:`pyaudio.PyAudio.terminate` (5)
-
-Example: Callback Mode Audio I/O
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. literalinclude:: ../test/play_wave_callback.py
-
-In order to use PyAudio, you first have to instantiate PyAudio using
-:py:func:`pyaudio.PyAudio` (1). This will set up the portaudio system. You are
-now ready to query sound devices or open streams. This step is the same as above.
-
-In contrast to blocking mode, in callback mode, portaudio itself will call a
-function whenever it needs new audio data or has new audio data available. Note
-that this function is called on its own thread. This function has the following
-signature ``callback(<input_data>, <frame_count>, <time_info>, <status_flag>)``
-and must return a tuple containing ``frame_count`` frames of audio data and a
-flag signifying whether there are more frames to play/record or not. (2)
-
-In order to record or play audio, you have to open a stream on the desired
-device with the desired audio parameters using :py:func:`pyaudio.PyAudio.open`
-(4). This will set up a portaudio :py:class:`pyaudio.Stream` to play or record
-audio. Note that for callback mode, you will have to pass the callback function
-as the `stream_callback` parameter.
-
-You can now start processing the audio stream using
-:py:func:`pyaudio.Stream.start_stream` (4).
-This will now call the callback function repeatedly until it returns
-:py:data:`pyaudio.paComplete`.
-
-Note that since the callback is called on a different thread, the main thread
-has to be kept busy in the meantime. The easiest way to do that is to just sleep
-until it is done. (5)
-
-When you are done using the stream, you have to stop it using
-:py:func:`pyaudio.Stream.stop_stream` and then close it using
-:py:func:`pyaudio.Stream.close`. (6)
-
-Finally, you should finish your portaudio session using
-:py:func:`pyaudio.PyAudio.terminate` (7)
+.. include:: ../sphinx/examples.rst
 
 Overview
-^^^^^^^^
+--------
 
 **Classes**
   :py:class:`PyAudio`, :py:class:`Stream`, :py:class:`PaMacCoreStreamInfo`
@@ -124,8 +48,9 @@ Overview
 .. _PaSampleFormat:
 
 **Portaudio Sample Formats**
-  :py:data:`paFloat32`, :py:data:`paInt32`, :py:data:`paInt24`, :py:data:`paInt16`,
-  :py:data:`paInt8`, :py:data:`paUInt8`, :py:data:`paCustomFormat`
+  :py:data:`paFloat32`, :py:data:`paInt32`, :py:data:`paInt24`,
+  :py:data:`paInt16`, :py:data:`paInt8`, :py:data:`paUInt8`,
+  :py:data:`paCustomFormat`
 
 .. |PaHostAPI| replace:: :ref:`PortAudio Host API <PaHostAPI>`
 .. _PaHostAPI:
@@ -173,10 +98,6 @@ Overview
   :py:data:`paInputUnderflow`, :py:data:`paInputOverflow`,
   :py:data:`paOutputUnderflow`, :py:data:`paOutputOverflow`,
   :py:data:`paPrimingOutput`
-
-Details
-^^^^^^^
-
 """
 
 __author__ = "Hubert Pham"

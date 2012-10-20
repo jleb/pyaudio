@@ -3,15 +3,19 @@ PyAudio Documentation
 
 .. contents::
 
-Module pyaudio
---------------
+------------
+Introduction
+------------
 
 .. automodule:: pyaudio
    :members:
    :special-members:
    :exclude-members: PyAudio, Stream, PaMacCoreStreamInfo
 
+   Details
+   -------
 
+-------------
 Class PyAudio
 -------------
 
@@ -19,6 +23,7 @@ Class PyAudio
    :members:
    :special-members:
 
+------------
 Class Stream
 ------------
 
@@ -26,6 +31,7 @@ Class Stream
    :members:
    :special-members:
 
+-------------------------
 Class PaMacCoreStreamInfo
 -------------------------
 

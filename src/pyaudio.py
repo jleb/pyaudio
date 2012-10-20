@@ -207,7 +207,7 @@ def get_sample_size(format):
 
     return pa.get_sample_size(format)
 
-def get_format_from_width(width, unsigned = True):
+def get_format_from_width(width, unsigned=True):
     """
     Returns a PortAudio format constant for the specified *width*.
 
@@ -287,15 +287,15 @@ class Stream:
                  rate,
                  channels,
                  format,
-                 input = False,
-                 output = False,
-                 input_device_index = None,
-                 output_device_index = None,
-                 frames_per_buffer = 1024,
-                 start = True,
-                 input_host_api_specific_stream_info = None,
-                 output_host_api_specific_stream_info = None,
-                 stream_callback = None):
+                 input=False,
+                 output=False,
+                 input_device_index=None,
+                 output_device_index=None,
+                 frames_per_buffer=1024,
+                 start=True,
+                 input_host_api_specific_stream_info=None,
+                 output_host_api_specific_stream_info=None,
+                 stream_callback=None):
         """
         Initialize a stream; this should be called by
         :py:func:`PyAudio.open`. A stream can either be input, output,
@@ -535,8 +535,8 @@ class Stream:
     # Reading/Writing
     ############################################################
 
-    def write(self, frames, num_frames = None,
-              exception_on_underflow = False):
+    def write(self, frames, num_frames=None,
+              exception_on_underflow=False):
 
         """
         Write samples to the stream.  Do not call when using
@@ -693,7 +693,7 @@ class PyAudio:
 
         return pa.get_sample_size(format)
 
-    def get_format_from_width(self, width, unsigned = True):
+    def get_format_from_width(self, width, unsigned=True):
         """
         Returns a PortAudio format constant for the specified `width`.
 
@@ -867,12 +867,12 @@ class PyAudio:
         return pa.get_device_count()
 
     def is_format_supported(self, rate,
-                            input_device = None,
-                            input_channels = None,
-                            input_format = None,
-                            output_device = None,
-                            output_channels = None,
-                            output_format = None):
+                            input_device=None,
+                            input_channels=None,
+                            input_format=None,
+                            output_device=None,
+                            output_channels=None,
+                            output_format=None):
         """
         Check to see if specified device configuration
         is supported. Returns True if the configuration
@@ -1044,7 +1044,7 @@ else:
         paMacCoreMinimizeCPUButPlayNice   = pa.paMacCoreMinimizeCPUButPlayNice
         paMacCoreMinimizeCPU              = pa.paMacCoreMinimizeCPU
 
-        def __init__(self, flags = None, channel_map = None):
+        def __init__(self, flags=None, channel_map=None):
             """
             Initialize with flags and channel_map. See PortAudio
             documentation for more details on these parameters; they are

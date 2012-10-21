@@ -1,3 +1,16 @@
+2012-10-20  Hubert Pham  <hubert@mit.edu>
+
+  PyAudio 0.2.7
+
+  - Callback-mode: support callables.
+
+    Thanks to John Luebs and Bastian Bechtold for this patch.
+
+  - Update documentation to use Sphinx.
+
+    Thanks again to Bastian Bechtold for his incredible contribution!
+
+
 2012-09-01  Hubert Pham  <hubert@mit.edu>
 
   PyAudio 0.2.6

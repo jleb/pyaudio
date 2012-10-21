@@ -34,6 +34,7 @@ while stream.is_active():
     time.sleep(0.1)
 
 # stop stream (6)
+stream.stop_stream()
 stream.close()
 wf.close()
 

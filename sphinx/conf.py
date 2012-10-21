@@ -243,3 +243,10 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+try:
+    from _portaudio import paMacCoreStreamInfo
+except ImportError:
+    pass
+else:
+    tags.add('pamac')

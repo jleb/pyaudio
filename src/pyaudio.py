@@ -36,7 +36,12 @@ Overview
 --------
 
 **Classes**
-  :py:class:`PyAudio`, :py:class:`Stream`, :py:class:`PaMacCoreStreamInfo`
+  :py:class:`PyAudio`, :py:class:`Stream`
+
+.. only:: pamac
+
+   **Host Specific Classes**
+     :py:class:`PaMacCoreStreamInfo`
 
 **Stream Conversion Convenience Functions**
   :py:func:`get_sample_size`, :py:func:`get_format_from_width`
@@ -323,10 +328,18 @@ class Stream:
             this to ``False``.
         :param input_host_api_specific_stream_info: Specifies a host API
             specific stream information data structure for input.
-            See :py:class:`PaMacCoreStreamInfo`.
+
+            .. only:: pamac
+
+               See :py:class:`PaMacCoreStreamInfo`.
+
         :param output_host_api_specific_stream_info: Specifies a host API
             specific stream information data structure for output.
-            See :py:class:`PaMacCoreStreamInfo`.
+
+            .. only:: pamac
+
+               See :py:class:`PaMacCoreStreamInfo`.
+
         :param stream_callback: Specifies a callback function for
             *non-blocking* (callback) operation.  Default is
             ``None``, which indicates *blocking* operation (i.e.,

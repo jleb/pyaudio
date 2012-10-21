@@ -31,13 +31,19 @@ Class Stream
    :members:
    :special-members:
 
--------------------------
-Class PaMacCoreStreamInfo
--------------------------
+-----------------
+Platform Specific
+-----------------
 
-.. autoclass:: pyaudio.PaMacCoreStreamInfo
-   :members:
-   :special-members:
+.. only:: pamac
+
+   Class PaMacCoreStreamInfo
+   -------------------------
+
+   .. autoclass:: pyaudio.PaMacCoreStreamInfo
+      :members:
+      :special-members:
+
 
 Indices and tables
 ==================

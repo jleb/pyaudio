@@ -59,7 +59,7 @@ pyaudio_module_sources = ['src/_portaudiomodule.c']
 
 include_dirs = []
 external_libraries = []
-extra_compile_args = ['-fno-strict-aliasing']
+extra_compile_args = []
 extra_link_args = []
 scripts = []
 defines = []

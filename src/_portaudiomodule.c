@@ -937,7 +937,9 @@ static void
 _cleanup_Stream_object(_pyAudio_Stream *streamObject)
 {
   if (streamObject->stream != NULL) {
+    Py_BEGIN_ALLOW_THREADS
     Pa_CloseStream(streamObject->stream);
+    Py_END_ALLOW_THREADS
     streamObject->stream = NULL;
   }
 
@@ -2105,9 +2107,11 @@ pa_stop_stream(PyObject *self, PyObject *args)
 
   stream = streamObject->stream;
 
-  if ( ((err = Pa_StopStream(stream)) != paNoError)  &&
-       (err != paStreamIsStopped)) {
+  Py_BEGIN_ALLOW_THREADS
+  err = Pa_StopStream(stream);
+  Py_END_ALLOW_THREADS
 
+  if ((err != paNoError) && (err != paStreamIsStopped)) {
     _cleanup_Stream_object(streamObject);
 
 #ifdef VERBOSE
@@ -2147,8 +2151,11 @@ pa_abort_stream(PyObject *self, PyObject *args)
 
   stream = streamObject->stream;
 
-  if ( ((err = Pa_AbortStream(stream)) != paNoError) &&
-       (err != paStreamIsStopped)) {
+  Py_BEGIN_ALLOW_THREADS
+  err = Pa_AbortStream(stream);
+  Py_END_ALLOW_THREADS
+
+  if ((err != paNoError) && (err != paStreamIsStopped)) {
     _cleanup_Stream_object(streamObject);
 
 #ifdef VERBOSE

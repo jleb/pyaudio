@@ -101,7 +101,7 @@ if STATIC_LINKING:
         extra_link_args += ['-lwinmm']
 
     elif sys.platform == 'linux2':
-        external_libraries += ['rt', 'm', 'pthread']
+        extra_link_args += ['-lrt', '-lm', '-lpthread']
 
         # Since you're insisting on linking statically against
         # PortAudio on GNU/Linux, be sure to link in whatever sound
@@ -110,7 +110,7 @@ if STATIC_LINKING:
         # I'll start you off with ALSA, since that's the most common
         # today. If you need JACK support, add it here.
 
-        external_libraries += ['asound']
+        extra_link_args += ['-lasound', '-ljack']
 
 
 pyaudio = Extension('_portaudio',

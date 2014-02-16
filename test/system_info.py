@@ -44,6 +44,8 @@ for i in range(max_devs):
         if name == 'hostApi':
             value = str(value) + \
                     " (%s)" % p.get_host_api_info_by_index(k[1])['name']
+
+        # Crashing?  See http://stackoverflow.com/a/5146914
         print("\t%s: %s" % (name, value))
 
     # print out supported format rates

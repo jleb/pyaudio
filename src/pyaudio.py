@@ -985,9 +985,21 @@ class PyAudio:
         :rtype: dict
         """
 
+        device_name = device_info.name
+
+        # Attempt to decode device_name
+        for codec in ["utf-8", "cp1252"]:
+            try:
+                device_name = device_name.decode(codec)
+                break
+            except:
+                pass
+
+        # If we fail to decode, we return the raw bytes and let the caller
+        # deal with the encoding.
         return {'index' : index,
                 'structVersion' : device_info.structVersion,
-                'name' : device_info.name,
+                'name' : device_name,
                 'hostApi' : device_info.hostApi,
                 'maxInputChannels' : device_info.maxInputChannels,
                 'maxOutputChannels' : device_info.maxOutputChannels,

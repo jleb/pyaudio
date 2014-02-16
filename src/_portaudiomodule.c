@@ -195,7 +195,7 @@ _pyAudio_paDeviceInfo_get_name(_pyAudio_paDeviceInfo *self,
     return NULL;
   }
 
-  return PyUnicode_FromString(self->devInfo->name);
+  return PyBytes_FromString(self->devInfo->name);
 }
 
 static PyObject *

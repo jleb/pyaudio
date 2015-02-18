@@ -2484,15 +2484,15 @@ pa_read_stream(PyObject *self, PyObject *args)
     } else {
       /* clean up */
       _cleanup_Stream_object(streamObject);
+
+      /* free the string buffer */
+      Py_XDECREF(rv);
+
+      PyErr_SetObject(PyExc_IOError,
+                       Py_BuildValue("(s,i)",
+                                     Pa_GetErrorText(err), err));
+      return NULL;
     }
-
-    /* free the string buffer */
-    Py_XDECREF(rv);
-
-    PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(err), err));
-    return NULL;
   }
 
   return rv;

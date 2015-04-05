@@ -2471,6 +2471,7 @@ pa_read_stream(PyObject *self, PyObject *args)
     /* ignore input overflow and output underflow */
     if (err & paInputOverflowed) {
 
+      fprintf(stderr, "WARN: Received paInputOverflowed\n");
 #ifdef VERBOSE
       fprintf(stderr, "Input Overflow.\n");
 #endif

@@ -2413,6 +2413,7 @@ pa_read_stream(PyObject *self, PyObject *args)
   int total_frames;
   short *sampleBlock;
   int num_bytes;
+  int should_warn = 0;
   PyObject *rv;
 
   PyObject *stream_arg;
@@ -2420,10 +2421,11 @@ pa_read_stream(PyObject *self, PyObject *args)
   PaStream *stream;
   PaStreamParameters *inputParameters;
 
-  if (!PyArg_ParseTuple(args, "O!i",
+  if (!PyArg_ParseTuple(args, "O!i|i",
 			&_pyAudio_StreamType,
 			&stream_arg,
-			&total_frames))
+			&total_frames,
+			&should_warn))
     return NULL;
 
   /* make sure value is positive! */
@@ -2471,7 +2473,9 @@ pa_read_stream(PyObject *self, PyObject *args)
     /* ignore input overflow and output underflow */
     if (err & paInputOverflowed) {
 
-      fprintf(stderr, "WARN: Received paInputOverflowed\n");
+      if (should_warn)
+         fprintf(stderr, "WARN: Received paInputOverflowed\n");
+
 #ifdef VERBOSE
       fprintf(stderr, "Input Overflow.\n");
 #endif

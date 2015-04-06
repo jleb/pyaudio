@@ -587,14 +587,20 @@ class Stream:
                         exception_on_underflow)
 
 
-    def read(self, num_frames):
+    def read(self, num_frames, should_warn=False):
         """
         Read samples from the stream.  Do not call when using
         *non-blocking* mode.
 
-        :param num_frames: The number of frames to read.
+        :param num_frames:
+           The number of frames to read.
+        :param should_warn:
+           Specifies whether a warning should be written to stderr (or silently
+           ignored) on buffer overflow. Defaults to False.
+
         :raises IOError: if stream is not an input stream
           or if the read operation was unsuccessful.
+
         :rtype: string
         """
 
@@ -602,7 +608,7 @@ class Stream:
             raise IOError("Not input stream",
                           paCanNotReadFromAnOutputOnlyStream)
 
-        return pa.read_stream(self._stream, num_frames)
+        return pa.read_stream(self._stream, num_frames, should_warn)
 
     def get_read_available(self):
         """

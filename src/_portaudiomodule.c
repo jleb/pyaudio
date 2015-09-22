@@ -984,17 +984,16 @@ _pyAudio_Stream_get_structVersion(_pyAudio_Stream *self,
   /* sanity check */
   if (!_is_open(self)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+                                  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
   if ((!self->streamInfo)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "No StreamInfo available",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr,
+                                  "No StreamInfo available"));
     return NULL;
   }
 
@@ -1008,18 +1007,17 @@ _pyAudio_Stream_get_inputLatency(_pyAudio_Stream *self,
   /* sanity check */
   if (!_is_open(self)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
   /* sanity check */
   if ((!self->streamInfo)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "No StreamInfo available",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr,
+                                  "No StreamInfo available"));
     return NULL;
   }
 
@@ -1033,18 +1031,17 @@ _pyAudio_Stream_get_outputLatency(_pyAudio_Stream *self,
   /* sanity check */
   if (!_is_open(self)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
   /* sanity check */
   if ((!self->streamInfo)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "No StreamInfo available",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr,
+                                  "No StreamInfo available"));
     return NULL;
   }
 
@@ -1058,18 +1055,17 @@ _pyAudio_Stream_get_sampleRate(_pyAudio_Stream *self,
   /* sanity check */
   if (!_is_open(self)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
   /* sanity check */
   if ((!self->streamInfo)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "No StreamInfo available",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr,
+                                  "No StreamInfo available"));
     return NULL;
   }
 
@@ -1213,8 +1209,8 @@ pa_initialize(PyObject *self, PyObject *args)
     fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
 #endif
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(err), err));
+		    Py_BuildValue("(i,s)",
+				  err, Pa_GetErrorText(err)));
     return NULL;
   }
 
@@ -1253,8 +1249,8 @@ pa_get_host_api_count(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(count), count));
+		    Py_BuildValue("(i,s)",
+				  count, Pa_GetErrorText(count)));
     return NULL;
   }
 
@@ -1280,8 +1276,8 @@ pa_get_default_host_api(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(index), index));
+		    Py_BuildValue("(i,s)",
+                                  index, Pa_GetErrorText(index)));
     return NULL;
   }
 
@@ -1308,8 +1304,8 @@ pa_host_api_type_id_to_host_api_index(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(index), index));
+		    Py_BuildValue("(i,s)",
+				  index, Pa_GetErrorText(index)));
     return NULL;
   }
 
@@ -1337,8 +1333,9 @@ pa_host_api_device_index_to_device_index(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(devIndex), devIndex));
+		    Py_BuildValue("(i,s)",
+				  devIndex,
+                                  Pa_GetErrorText(devIndex)));
     return NULL;
   }
 
@@ -1359,9 +1356,9 @@ pa_get_host_api_info(PyObject *self, PyObject *args)
 
   if (!_info) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Invalid host api info",
-				  paInvalidHostApi));
+		    Py_BuildValue("(i,s)",
+				  paInvalidHostApi,
+                                  "Invalid host api info"));
     return NULL;
   }
 
@@ -1393,8 +1390,8 @@ pa_get_device_count(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(count), count));
+		    Py_BuildValue("(i,s)",
+				  count, Pa_GetErrorText(count)));
     return NULL;
   }
 
@@ -1422,8 +1419,8 @@ pa_get_default_input_device(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(index), index));
+		    Py_BuildValue("(i,s)",
+				  index, Pa_GetErrorText(index)));
     return NULL;
   }
 
@@ -1451,8 +1448,8 @@ pa_get_default_output_device(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(index), index));
+		    Py_BuildValue("(i,s)",
+				  index, Pa_GetErrorText(index)));
     return NULL;
   }
 
@@ -1473,8 +1470,9 @@ pa_get_device_info(PyObject *self, PyObject *args)
 
   if (!_info) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Invalid device info", paInvalidDevice));
+		    Py_BuildValue("(i,s)",
+				  paInvalidDevice,
+                                  "Invalid device info"));
     return NULL;
   }
 
@@ -1807,10 +1805,10 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
         outputParameters->device >= Pa_GetDeviceCount()) {
       free(outputParameters);
       PyErr_SetObject(PyExc_IOError,
-		      Py_BuildValue("(s,i)",
-				    "Invalid output device "
-				    "(no default output device)",
-				    paInvalidDevice));
+		      Py_BuildValue("(i,s)",
+                                    paInvalidDevice,
+                                    "Invalid output device "
+				    "(no default output device)"));
       return NULL;
     }
 
@@ -1844,10 +1842,10 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
     if (inputParameters->device < 0) {
       free(inputParameters);
       PyErr_SetObject(PyExc_IOError,
-		      Py_BuildValue("(s,i)",
-				    "Invalid input device "
-				    "(no default output device)",
-				    paInvalidDevice));
+		      Py_BuildValue("(i,s)",
+                                    paInvalidDevice,
+                                    "Invalid input device "
+				    "(no default output device)"));
       return NULL;
     }
 
@@ -1901,8 +1899,8 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(err), err));
+		    Py_BuildValue("(i,s)",
+				  err, Pa_GetErrorText(err)));
     return NULL;
   }
 
@@ -1910,9 +1908,10 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!streamInfo) {
     /* Pa_Terminate(); */
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
- 				  "Could not get stream information",
-				  paInternalError));
+		    Py_BuildValue("(i,s)",
+ 				  paInternalError,
+                                  "Could not get stream information"));
+
     return NULL;
   }
 
@@ -2057,9 +2056,9 @@ pa_start_stream(PyObject *self, PyObject *args)
 
   if (!_is_open(streamObject)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr,
+                                  "Stream closed"));
     return NULL;
   }
 
@@ -2076,9 +2075,8 @@ pa_start_stream(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(err),
-				  err));
+		    Py_BuildValue("(i,s)",
+				  err, Pa_GetErrorText(err)));
     return NULL;
   }
 
@@ -2121,9 +2119,8 @@ pa_stop_stream(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(err),
-				  err));
+		    Py_BuildValue("(i,s)",
+				  err, Pa_GetErrorText(err)));
     return NULL;
   }
 
@@ -2165,9 +2162,8 @@ pa_abort_stream(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(err),
-				  err));
+		    Py_BuildValue("(i,s)",
+				  err, Pa_GetErrorText(err)));
     return NULL;
   }
 
@@ -2190,9 +2186,8 @@ pa_is_stream_stopped(PyObject *self, PyObject *args)
 
   if (!_is_open(streamObject)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
@@ -2208,9 +2203,8 @@ pa_is_stream_stopped(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(err),
-				  err));
+		    Py_BuildValue("(i,s)",
+				  err, Pa_GetErrorText(err)));
     return NULL;
   }
 
@@ -2254,9 +2248,8 @@ pa_is_stream_active(PyObject *self, PyObject *args)
 #endif
 
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(err),
-				  err));
+		    Py_BuildValue("(i,s)",
+				  err, Pa_GetErrorText(err)));
     return NULL;
   }
 
@@ -2284,9 +2277,8 @@ pa_get_stream_time(PyObject *self, PyObject *args)
 
   if (!_is_open(streamObject)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
@@ -2295,9 +2287,8 @@ pa_get_stream_time(PyObject *self, PyObject *args)
   if ((time = Pa_GetStreamTime(stream)) == 0) {
     _cleanup_Stream_object(streamObject);
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Internal Error",
-				  paInternalError));
+		    Py_BuildValue("(i,s)",
+				  paInternalError, "Internal Error"));
     return NULL;
   }
 
@@ -2318,9 +2309,8 @@ pa_get_stream_cpu_load(PyObject *self, PyObject *args)
 
   if (!_is_open(streamObject)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
@@ -2366,9 +2356,8 @@ pa_write_stream(PyObject *self, PyObject *args)
 
   if (!_is_open(streamObject)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
@@ -2400,9 +2389,9 @@ pa_write_stream(PyObject *self, PyObject *args)
 #endif
 
   PyErr_SetObject(PyExc_IOError,
-		  Py_BuildValue("(s,i)",
-				Pa_GetErrorText(err),
-				err));
+		  Py_BuildValue("(i,s)",
+                                err,
+				Pa_GetErrorText(err)));
   return NULL;
 }
 
@@ -2438,9 +2427,8 @@ pa_read_stream(PyObject *self, PyObject *args)
 
   if (!_is_open(streamObject)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
@@ -2458,9 +2446,9 @@ pa_read_stream(PyObject *self, PyObject *args)
 
   if (sampleBlock == NULL) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Out of memory",
-				  paInsufficientMemory));
+		    Py_BuildValue("(i,s)",
+				  paInsufficientMemory,
+                                  "Out of memory"));
     return NULL;
   }
 
@@ -2515,9 +2503,8 @@ pa_get_stream_write_available(PyObject *self, PyObject *args)
 
   if (!_is_open(streamObject)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 
@@ -2541,9 +2528,8 @@ pa_get_stream_read_available(PyObject *self, PyObject *args)
 
   if (!_is_open(streamObject)) {
     PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  "Stream closed",
-				  paBadStreamPtr));
+		    Py_BuildValue("(i,s)",
+				  paBadStreamPtr, "Stream closed"));
     return NULL;
   }
 

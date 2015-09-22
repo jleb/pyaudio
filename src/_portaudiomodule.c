@@ -2414,16 +2414,18 @@ pa_read_stream(PyObject *self, PyObject *args)
   short *sampleBlock;
   int num_bytes;
   PyObject *rv;
+  int should_raise_exception = 0;
 
   PyObject *stream_arg;
   _pyAudio_Stream *streamObject;
   PaStream *stream;
   PaStreamParameters *inputParameters;
 
-  if (!PyArg_ParseTuple(args, "O!i",
+  if (!PyArg_ParseTuple(args, "O!i|i",
 			&_pyAudio_StreamType,
 			&stream_arg,
-			&total_frames))
+			&total_frames,
+			&should_raise_exception))
     return NULL;
 
   /* make sure value is positive! */
@@ -2467,35 +2469,35 @@ pa_read_stream(PyObject *self, PyObject *args)
   Py_END_ALLOW_THREADS
 
   if (err != paNoError) {
-
-    /* ignore input overflow and output underflow */
-    if (err & paInputOverflowed) {
-
-#ifdef VERBOSE
-      fprintf(stderr, "Input Overflow.\n");
-#endif
-
-    } else if (err & paOutputUnderflowed) {
-
-#ifdef VERBOSE
-      fprintf(stderr, "Output Underflow.\n");
-#endif
-
+    if (err == paInputOverflowed) {
+      if (should_raise_exception) {
+          goto error;
+      }
     } else {
-      /* clean up */
-      _cleanup_Stream_object(streamObject);
+        goto error;
     }
-
-    /* free the string buffer */
-    Py_XDECREF(rv);
-
-    PyErr_SetObject(PyExc_IOError,
-		    Py_BuildValue("(s,i)",
-				  Pa_GetErrorText(err), err));
-    return NULL;
   }
 
   return rv;
+
+ error:
+  /* clean up */
+  _cleanup_Stream_object(streamObject);
+
+  /* free the string buffer */
+  Py_XDECREF(rv);
+
+  PyErr_SetObject(PyExc_IOError,
+                  Py_BuildValue("(i, s)",
+                                err, Pa_GetErrorText(err)));
+
+#ifdef VERBOSE
+  fprintf(stderr, "An error occured while using the portaudio stream\n");
+  fprintf(stderr, "Error number: %d\n", err);
+  fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
+#endif
+
+  return NULL;
 }
 
 static PyObject *

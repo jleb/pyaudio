@@ -562,7 +562,7 @@ class Stream:
            Defaults to None, in which this value will be
            automatically computed.
         :param exception_on_underflow:
-           Specifies whether an exception should be thrown
+           Specifies whether an IOError exception should be thrown
            (or silently ignored) on buffer underflow. Defaults
            to False for improved performance, especially on
            slower platforms.
@@ -587,12 +587,16 @@ class Stream:
                         exception_on_underflow)
 
 
-    def read(self, num_frames):
+    def read(self, num_frames, exception_on_overflow=True):
         """
         Read samples from the stream.  Do not call when using
         *non-blocking* mode.
 
         :param num_frames: The number of frames to read.
+        :param exception_on_overflow:
+           Specifies whether an IOError exception should be thrown
+           (or silently ignored) on input buffer overflow. Defaults
+           to True.
         :raises IOError: if stream is not an input stream
           or if the read operation was unsuccessful.
         :rtype: string
@@ -602,7 +606,7 @@ class Stream:
             raise IOError("Not input stream",
                           paCanNotReadFromAnOutputOnlyStream)
 
-        return pa.read_stream(self._stream, num_frames)
+        return pa.read_stream(self._stream, num_frames, exception_on_overflow)
 
     def get_read_available(self):
         """

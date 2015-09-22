@@ -1,3 +1,4 @@
+import sys
 import time
 import unittest
 
@@ -88,6 +89,10 @@ class PyAudioErrorTests(unittest.TestCase):
         time.sleep(0.5)
         stream.write('\x00\x00\x00\x00', exception_on_underflow=False)
 
+        # It's difficult to invoke an underflow on ALSA, so skip.
+        if sys.platform in ('linux', 'linux2'):
+            return
+
         with self.assertRaises(IOError) as err:
             time.sleep(0.5)
             stream.write('\x00\x00\x00\x00', exception_on_underflow=True)
@@ -102,6 +107,10 @@ class PyAudioErrorTests(unittest.TestCase):
                              input=True)
         time.sleep(0.5)
         stream.read(2, exception_on_overflow=False)
+
+        # It's difficult to invoke an underflow on ALSA, so skip.
+        if sys.platform in ('linux', 'linux2'):
+            return
 
         with self.assertRaises(IOError) as err:
             time.sleep(0.5)

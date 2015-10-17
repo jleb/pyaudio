@@ -64,7 +64,7 @@ stream = p.open(
 data = wf.readframes(chunk)
 
 # play stream
-while data != '':
+while len(data) > 0:
     stream.write(data)
     data = wf.readframes(chunk)
 

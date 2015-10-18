@@ -106,7 +106,7 @@ Overview
 """
 
 __author__ = "Hubert Pham"
-__version__ = "0.2.8"
+__version__ = "0.2.9"
 __docformat__ = "restructuredtext en"
 
 import sys

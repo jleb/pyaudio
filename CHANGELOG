@@ -1,3 +1,28 @@
+2015-10-18  Hubert Pham  <hubert@mit.edu>
+
+  PyAudio 0.2.9
+
+  - Fix overflow error handling logic for pa_read_stream.
+
+    Stream.read takes an additional parameter that specifies whether
+    an exception is raised on audio buffer overflow, for parity with
+    Stream.write.  Includes relevant bug fixes in the C module logic.
+
+    Thanks to Tony Jacobson for submitting a patch!
+
+  - Fix IOError arguments.
+
+    IOError exceptions previously had values in the strerror and errno fields
+    swapped, which is now corrected.
+
+    Thanks to Sami Liedes for the report!
+
+  - Miscellaneous updates.
+
+    Python library surfaces issues with importing low-level C module.
+    Code formatting update.
+    Updates to examples for Python 3 compatibility.
+
 2014-02-16  Hubert Pham  <hubert@mit.edu>
 
   PyAudio 0.2.8
@@ -96,4 +121,3 @@
 2008-02-12  Justin Mazzola Paluska  <jmp@mit.edu>
 
   - Initial version of debian packaging.
-

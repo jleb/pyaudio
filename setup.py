@@ -1,5 +1,5 @@
 """
-PyAudio v0.2.8: Python Bindings for PortAudio.
+PyAudio v0.2.9: Python Bindings for PortAudio.
 
 Copyright (c) 2006 Hubert Pham
 
@@ -34,7 +34,7 @@ try:
 except ImportError:
     from distutils.core import setup, Extension
 
-__version__ = "0.2.8"
+__version__ = "0.2.9"
 
 # distutils will try to locate and link dynamically against portaudio.
 #

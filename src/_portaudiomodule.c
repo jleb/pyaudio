@@ -1583,6 +1583,8 @@ static PyObject *pa_open(PyObject *self, PyObject *args, PyObject *kwargs) {
     context->frame_size = Pa_GetSampleSize(format) * channels;
   }
 
+  // clang-format off
+  Py_BEGIN_ALLOW_THREADS
   err = Pa_OpenStream(&stream,
                       /* input/output parameters */
                       /* NULL values are ignored */
@@ -1598,6 +1600,8 @@ static PyObject *pa_open(PyObject *self, PyObject *args, PyObject *kwargs) {
                       (stream_callback) ? (_stream_callback_cfunction) : (NULL),
                       /* callback userData, if applicable */
                       context);
+  Py_END_ALLOW_THREADS
+  // clang-format on
 
   if (err != paNoError) {
 #ifdef VERBOSE
@@ -1760,7 +1764,13 @@ static PyObject *pa_start_stream(PyObject *self, PyObject *args) {
 
   stream = streamObject->stream;
 
-  if (((err = Pa_StartStream(stream)) != paNoError) &&
+  // clang-format off
+  Py_BEGIN_ALLOW_THREADS
+  err = Pa_StartStream(stream);
+  Py_END_ALLOW_THREADS
+  // clang-format on
+
+  if ((err != paNoError) &&
       (err != paStreamIsNotStopped)) {
     _cleanup_Stream_object(streamObject);
 
@@ -1802,9 +1812,9 @@ static PyObject *pa_stop_stream(PyObject *self, PyObject *args) {
   Py_BEGIN_ALLOW_THREADS
   err = Pa_StopStream(stream);
   Py_END_ALLOW_THREADS
-      // clang-format on
+  // clang-format on
 
-      if ((err != paNoError) && (err != paStreamIsStopped)) {
+  if ((err != paNoError) && (err != paStreamIsStopped)) {
     _cleanup_Stream_object(streamObject);
 
 #ifdef VERBOSE
@@ -1845,9 +1855,9 @@ static PyObject *pa_abort_stream(PyObject *self, PyObject *args) {
   Py_BEGIN_ALLOW_THREADS
   err = Pa_AbortStream(stream);
   Py_END_ALLOW_THREADS
-      // clang-format on
+  // clang-format on
 
-      if ((err != paNoError) && (err != paStreamIsStopped)) {
+  if ((err != paNoError) && (err != paStreamIsStopped)) {
     _cleanup_Stream_object(streamObject);
 
 #ifdef VERBOSE

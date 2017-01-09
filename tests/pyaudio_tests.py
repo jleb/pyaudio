@@ -208,6 +208,60 @@ class PyAudioTests(unittest.TestCase):
             test_signal,
             len(freqs))
 
+    def test_device_lock_gil_order(self):
+        """Ensure lock acquisition order is consistent: device lock then GIL."""
+        # This test targets OSX/macOS CoreAudio, which seems to use
+        # audio device locks. On ALSA and Win32 MME, this problem
+        # doesn't seem to appear despite not releasing the GIL when
+        # calling into PortAudio.
+        rate = 44100 # frames per second
+        width = 2    # bytes per sample
+        channels = 2
+        frames_per_chunk = 1024
+
+        def out_callback(_, frame_count, time_info, status):
+            return ('', pyaudio.paComplete)
+
+        def in_callback(in_data, frame_count, time_info, status):
+            # Release the GIL for a bit
+            time.sleep(3)
+            return (None, pyaudio.paComplete)
+
+        in_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            input=True,
+            frames_per_buffer=frames_per_chunk,
+            input_device_index=self.loopback_input_idx,
+            stream_callback=in_callback)
+        # In a separate (C) thread, portaudio/driver will grab the device lock,
+        # then the GIL to call in_callback.
+        in_stream.start_stream()
+        # Wait a bit to let that callback thread start.
+        time.sleep(1)
+        # in_callback will eventually drop the GIL when executing
+        # time.sleep (while retaining the device lock), allowing the
+        # following code to run. Opening a stream and starting it MUST
+        # release the GIL before attempting to acquire the device
+        # lock. Otherwise, the following code will wait for the device
+        # lock (while holding the GIL), while the in_callback thread
+        # will be waiting for the GIL once time.sleep completes (while
+        # holding the device lock), leading to deadlock.
+        out_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            output=True,
+            frames_per_buffer=frames_per_chunk,
+            output_device_index=self.loopback_output_idx,
+            stream_callback=out_callback)
+        out_stream.start_stream()
+
+        time.sleep(0.1)
+        in_stream.stop_stream()
+        out_stream.stop_stream()
+
     @staticmethod
     def create_reference_signal(freqs, sampling_rate, width, duration):
         """Return reference signal with several sinuoids with frequencies

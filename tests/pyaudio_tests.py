@@ -20,7 +20,6 @@ import wave
 import sys
 
 import numpy
-import scipy.signal
 
 import pyaudio
 
@@ -638,6 +637,6 @@ class PyAudioTests(unittest.TestCase):
         # peak when the spectra overlap and mostly 0s elsewhere. Verify that
         # using a histogram of the cross-correlation:
         freq_corr_hist, _ = numpy.histogram(
-            scipy.signal.correlate(cap_fft, ref_fft),
+            numpy.correlate(cap_fft, ref_fft, mode='full'),
             bins=10)
         self.assertLess(sum(freq_corr_hist[2:])/sum(freq_corr_hist), 1e-2)

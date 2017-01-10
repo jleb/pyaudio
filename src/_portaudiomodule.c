@@ -771,8 +771,8 @@ static void _cleanup_Stream_object(_pyAudio_Stream *streamObject) {
     Py_BEGIN_ALLOW_THREADS
     Pa_CloseStream(streamObject->stream);
     Py_END_ALLOW_THREADS
-        // clang-format on
-        streamObject->stream = NULL;
+    // clang-format on
+    streamObject->stream = NULL;
   }
 
   if (streamObject->streamInfo) streamObject->streamInfo = NULL;

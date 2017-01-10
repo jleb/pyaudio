@@ -754,8 +754,8 @@ typedef struct {
 typedef struct {
   // clang-format off
   PyObject_HEAD
-      // clang-format on
-      PaStream *stream;
+  // clang-format on
+  PaStream *stream;
   PaStreamParameters *inputParameters;
   PaStreamParameters *outputParameters;
   PaStreamInfo *streamInfo;
@@ -1274,7 +1274,7 @@ int _stream_callback_cfunction(const void *input, void *output,
   PyObject *py_status_flags = PyLong_FromUnsignedLong(statusFlags);
   PyObject *py_input_data = Py_None;
   const char *pData;
-  int output_len;
+  unsigned output_len;
   PyObject *py_result;
 
   if (input) {
@@ -2057,9 +2057,9 @@ static PyObject *pa_write_stream(PyObject *self, PyObject *args) {
   Py_BEGIN_ALLOW_THREADS
   err = Pa_WriteStream(stream, data, total_frames);
   Py_END_ALLOW_THREADS
-      // clang-format on
+  // clang-format on
 
-      if (err != paNoError) {
+  if (err != paNoError) {
     if (err == paOutputUnderflowed) {
       if (should_throw_exception) {
         goto error;
@@ -2143,9 +2143,9 @@ static PyObject *pa_read_stream(PyObject *self, PyObject *args) {
   Py_BEGIN_ALLOW_THREADS
   err = Pa_ReadStream(stream, sampleBlock, total_frames);
   Py_END_ALLOW_THREADS
-      // clang-format on
+  // clang-format on
 
-      if (err != paNoError) {
+  if (err != paNoError) {
     if (err == paInputOverflowed) {
       if (should_raise_exception) {
         goto error;

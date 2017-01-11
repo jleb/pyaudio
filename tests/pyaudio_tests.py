@@ -20,7 +20,6 @@ import wave
 import sys
 
 import numpy
-import scipy.signal
 
 import pyaudio
 
@@ -208,6 +207,360 @@ class PyAudioTests(unittest.TestCase):
             test_signal,
             len(freqs))
 
+    def test_device_lock_gil_order(self):
+        """Ensure no deadlock between Pa_{Open,Start,Stop}Stream and GIL."""
+        # This test targets OSX/macOS CoreAudio, which seems to use
+        # audio device locks. On ALSA and Win32 MME, this problem
+        # doesn't seem to appear despite not releasing the GIL when
+        # calling into PortAudio.
+        rate = 44100 # frames per second
+        width = 2    # bytes per sample
+        channels = 2
+        frames_per_chunk = 1024
+
+        def out_callback(_, frame_count, time_info, status):
+            return ('', pyaudio.paComplete)
+
+        def in_callback(in_data, frame_count, time_info, status):
+            # Release the GIL for a bit
+            time.sleep(2)
+            return (None, pyaudio.paComplete)
+
+        in_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            input=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            input_device_index=self.loopback_input_idx,
+            stream_callback=in_callback)
+        # In a separate (C) thread, portaudio/driver will grab the device lock,
+        # then the GIL to call in_callback.
+        in_stream.start_stream()
+        # Wait a bit to let that callback thread start.
+        time.sleep(1)
+        # in_callback will eventually drop the GIL when executing
+        # time.sleep (while retaining the device lock), allowing the
+        # following code to run. Opening a stream and starting it MUST
+        # release the GIL before attempting to acquire the device
+        # lock. Otherwise, the following code will wait for the device
+        # lock (while holding the GIL), while the in_callback thread
+        # will be waiting for the GIL once time.sleep completes (while
+        # holding the device lock), leading to deadlock.
+        out_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            output=True,
+            frames_per_buffer=frames_per_chunk,
+            output_device_index=self.loopback_output_idx,
+            stream_callback=out_callback)
+        out_stream.start_stream()
+
+        time.sleep(0.1)
+        in_stream.stop_stream()
+        out_stream.stop_stream()
+
+    def test_stream_state_gil(self):
+        """Ensure no deadlock between Pa_IsStream{Active,Stopped} and GIL."""
+        rate = 44100 # frames per second
+        width = 2    # bytes per sample
+        channels = 2
+        frames_per_chunk = 1024
+
+        def out_callback(_, frame_count, time_info, status):
+            return ('', pyaudio.paComplete)
+
+        def in_callback(in_data, frame_count, time_info, status):
+            # Release the GIL for a bit
+            time.sleep(2)
+            return (None, pyaudio.paComplete)
+
+        in_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            input=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            input_device_index=self.loopback_input_idx,
+            stream_callback=in_callback)
+        out_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            output=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            output_device_index=self.loopback_output_idx,
+            stream_callback=out_callback)
+        # In a separate (C) thread, portaudio/driver will grab the device lock,
+        # then the GIL to call in_callback.
+        in_stream.start_stream()
+        # Wait a bit to let that callback thread start.
+        time.sleep(1)
+        # in_callback will eventually drop the GIL when executing
+        # time.sleep (while retaining the device lock), allowing the
+        # following code to run. Checking the state of the stream MUST
+        # not require the device lock, but if it does, it must release the GIL
+        # before attempting to acquire the device
+        # lock. Otherwise, the following code will wait for the device
+        # lock (while holding the GIL), while the in_callback thread
+        # will be waiting for the GIL once time.sleep completes (while
+        # holding the device lock), leading to deadlock.
+        self.assertTrue(in_stream.is_active())
+        self.assertFalse(in_stream.is_stopped())
+
+        self.assertTrue(out_stream.is_stopped())
+        self.assertFalse(out_stream.is_active())
+        out_stream.start_stream()
+        self.assertFalse(out_stream.is_stopped())
+        self.assertTrue(out_stream.is_active())
+
+        time.sleep(0.1)
+        in_stream.stop_stream()
+        out_stream.stop_stream()
+
+    def test_get_stream_time_gil(self):
+        """Ensure no deadlock between PA_GetStreamTime and GIL."""
+        rate = 44100 # frames per second
+        width = 2    # bytes per sample
+        channels = 2
+        frames_per_chunk = 1024
+
+        def out_callback(_, frame_count, time_info, status):
+            return ('', pyaudio.paComplete)
+
+        def in_callback(in_data, frame_count, time_info, status):
+            # Release the GIL for a bit
+            time.sleep(2)
+            return (None, pyaudio.paComplete)
+
+        in_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            input=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            input_device_index=self.loopback_input_idx,
+            stream_callback=in_callback)
+        out_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            output=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            output_device_index=self.loopback_output_idx,
+            stream_callback=out_callback)
+        # In a separate (C) thread, portaudio/driver will grab the device lock,
+        # then the GIL to call in_callback.
+        in_stream.start_stream()
+        # Wait a bit to let that callback thread start.
+        time.sleep(1)
+        # in_callback will eventually drop the GIL when executing
+        # time.sleep (while retaining the device lock), allowing the
+        # following code to run. Getting the stream time MUST not
+        # require the device lock, but if it does, it must release the
+        # GIL before attempting to acquire the device lock. Otherwise,
+        # the following code will wait for the device lock (while
+        # holding the GIL), while the in_callback thread will be
+        # waiting for the GIL once time.sleep completes (while holding
+        # the device lock), leading to deadlock.
+        self.assertGreater(in_stream.get_time(), -1)
+        self.assertGreater(out_stream.get_time(), 1)
+
+        time.sleep(0.1)
+        in_stream.stop_stream()
+        out_stream.stop_stream()
+
+    def test_get_stream_cpuload_gil(self):
+        """Ensure no deadlock between Pa_GetStreamCpuLoad and GIL."""
+        rate = 44100 # frames per second
+        width = 2    # bytes per sample
+        channels = 2
+        frames_per_chunk = 1024
+
+        def out_callback(_, frame_count, time_info, status):
+            return ('', pyaudio.paComplete)
+
+        def in_callback(in_data, frame_count, time_info, status):
+            # Release the GIL for a bit
+            time.sleep(2)
+            return (None, pyaudio.paComplete)
+
+        in_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            input=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            input_device_index=self.loopback_input_idx,
+            stream_callback=in_callback)
+        out_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            output=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            output_device_index=self.loopback_output_idx,
+            stream_callback=out_callback)
+        # In a separate (C) thread, portaudio/driver will grab the device lock,
+        # then the GIL to call in_callback.
+        in_stream.start_stream()
+        # Wait a bit to let that callback thread start.
+        time.sleep(1)
+        # in_callback will eventually drop the GIL when executing
+        # time.sleep (while retaining the device lock), allowing the
+        # following code to run. Getting the stream cpuload MUST not
+        # require the device lock, but if it does, it must release the
+        # GIL before attempting to acquire the device lock. Otherwise,
+        # the following code will wait for the device lock (while
+        # holding the GIL), while the in_callback thread will be
+        # waiting for the GIL once time.sleep completes (while holding
+        # the device lock), leading to deadlock.
+        self.assertGreater(in_stream.get_cpu_load(), -1)
+        self.assertGreater(out_stream.get_cpu_load(), -1)
+
+        time.sleep(0.1)
+        in_stream.stop_stream()
+        out_stream.stop_stream()
+
+    def test_get_stream_write_available_gil(self):
+        """Ensure no deadlock between Pa_GetStreamWriteAvailable and GIL."""
+        rate = 44100 # frames per second
+        width = 2    # bytes per sample
+        channels = 2
+        frames_per_chunk = 1024
+
+        def in_callback(in_data, frame_count, time_info, status):
+            # Release the GIL for a bit
+            time.sleep(2)
+            return (None, pyaudio.paComplete)
+
+        in_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            input=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            input_device_index=self.loopback_input_idx,
+            stream_callback=in_callback)
+        out_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            output=True,
+            frames_per_buffer=frames_per_chunk,
+            output_device_index=self.loopback_output_idx)
+        # In a separate (C) thread, portaudio/driver will grab the device lock,
+        # then the GIL to call in_callback.
+        in_stream.start_stream()
+        # Wait a bit to let that callback thread start.
+        time.sleep(1)
+        # in_callback will eventually drop the GIL when executing
+        # time.sleep (while retaining the device lock), allowing the
+        # following code to run. Getting the stream write available MUST not
+        # require the device lock, but if it does, it must release the
+        # GIL before attempting to acquire the device lock. Otherwise,
+        # the following code will wait for the device lock (while
+        # holding the GIL), while the in_callback thread will be
+        # waiting for the GIL once time.sleep completes (while holding
+        # the device lock), leading to deadlock.
+        self.assertGreater(out_stream.get_write_available(), -1)
+
+        time.sleep(0.1)
+        in_stream.stop_stream()
+
+    def test_get_stream_read_available_gil(self):
+        """Ensure no deadlock between Pa_GetStreamReadAvailable and GIL."""
+        rate = 44100 # frames per second
+        width = 2    # bytes per sample
+        channels = 2
+        frames_per_chunk = 1024
+
+        def out_callback(in_data, frame_count, time_info, status):
+            # Release the GIL for a bit
+            time.sleep(2)
+            return (None, pyaudio.paComplete)
+
+        in_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            input=True,
+            frames_per_buffer=frames_per_chunk,
+            input_device_index=self.loopback_input_idx)
+        out_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            output=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            output_device_index=self.loopback_output_idx,
+            stream_callback=out_callback)
+        # In a separate (C) thread, portaudio/driver will grab the device lock,
+        # then the GIL to call in_callback.
+        out_stream.start_stream()
+        # Wait a bit to let that callback thread start.
+        time.sleep(1)
+        # in_callback will eventually drop the GIL when executing
+        # time.sleep (while retaining the device lock), allowing the
+        # following code to run. Getting the stream read available MUST not
+        # require the device lock, but if it does, it must release the
+        # GIL before attempting to acquire the device lock. Otherwise,
+        # the following code will wait for the device lock (while
+        # holding the GIL), while the in_callback thread will be
+        # waiting for the GIL once time.sleep completes (while holding
+        # the device lock), leading to deadlock.
+        self.assertGreater(in_stream.get_read_available(), -1)
+
+        time.sleep(0.1)
+        in_stream.stop_stream()
+
+    def test_terminate_gil(self):
+        """Ensure no deadlock between Pa_Terminate and GIL."""
+        rate = 44100 # frames per second
+        width = 2    # bytes per sample
+        channels = 2
+        frames_per_chunk = 1024
+
+        def out_callback(in_data, frame_count, time_info, status):
+            # Release the GIL for a bit
+            time.sleep(2)
+            return (None, pyaudio.paComplete)
+
+        out_stream = self.p.open(
+            format=self.p.get_format_from_width(width),
+            channels=channels,
+            rate=rate,
+            output=True,
+            start=False,
+            frames_per_buffer=frames_per_chunk,
+            output_device_index=self.loopback_output_idx,
+            stream_callback=out_callback)
+        # In a separate (C) thread, portaudio/driver will grab the device lock,
+        # then the GIL to call in_callback.
+        out_stream.start_stream()
+        # Wait a bit to let that callback thread start.
+        time.sleep(1)
+        # in_callback will eventually drop the GIL when executing
+        # time.sleep (while retaining the device lock), allowing the
+        # following code to run. Terminating PyAudio MUST not
+        # require the device lock, but if it does, it must release the
+        # GIL before attempting to acquire the device lock. Otherwise,
+        # the following code will wait for the device lock (while
+        # holding the GIL), while the in_callback thread will be
+        # waiting for the GIL once time.sleep completes (while holding
+        # the device lock), leading to deadlock.
+        self.p.terminate()
+
     @staticmethod
     def create_reference_signal(freqs, sampling_rate, width, duration):
         """Return reference signal with several sinuoids with frequencies
@@ -284,6 +637,6 @@ class PyAudioTests(unittest.TestCase):
         # peak when the spectra overlap and mostly 0s elsewhere. Verify that
         # using a histogram of the cross-correlation:
         freq_corr_hist, _ = numpy.histogram(
-            scipy.signal.correlate(cap_fft, ref_fft),
+            numpy.correlate(cap_fft, ref_fft, mode='full'),
             bins=10)
         self.assertLess(sum(freq_corr_hist[2:])/sum(freq_corr_hist), 1e-2)

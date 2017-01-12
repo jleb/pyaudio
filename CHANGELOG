@@ -1,3 +1,13 @@
+2017-01-10  Hubert Pham  <hubert@mit.edu>
+
+  PyAudio 0.2.10
+
+  - Release the GIL during PortAudio I/O calls to avoid potential deadlock.
+
+    Thanks to Michael Graczyk for submitting a patch!
+
+  - Add a few automated unit tests.
+
 2015-10-18  Hubert Pham  <hubert@mit.edu>
 
   PyAudio 0.2.9

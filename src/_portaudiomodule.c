@@ -1348,8 +1348,6 @@ int _stream_callback_cfunction(const void *input, void *output,
     goto end;
   }
 
-  Py_DECREF(py_result);
-
   if ((return_val != paComplete) && (return_val != paAbort) &&
       (return_val != paContinue)) {
     PyErr_SetString(PyExc_ValueError,
@@ -1358,6 +1356,7 @@ int _stream_callback_cfunction(const void *input, void *output,
     PyErr_Print();
 
     // Quit the callback loop
+    Py_DECREF(py_result);
     return_val = paAbort;
     goto end;
   }
@@ -1374,6 +1373,7 @@ int _stream_callback_cfunction(const void *input, void *output,
       return_val = paComplete;
     }
   }
+  Py_DECREF(py_result);
 
 end:
   if (input) {

@@ -471,7 +471,7 @@ class Stream:
 
     def get_output_latency(self):
         """
-        Return the input latency.
+        Return the output latency.
 
         :rtype: float
         """

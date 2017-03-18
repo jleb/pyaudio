@@ -44,5 +44,5 @@ docs: build
 ######################################################################
 # Source Tarball
 ######################################################################
-tarball: docs $(SRCFILES) $(EXAMPLES) $(TESTS) MANIFEST.in
+tarball: $(SRCFILES) $(EXAMPLES) $(TESTS) MANIFEST.in
 	@$(PYTHON) setup.py sdist

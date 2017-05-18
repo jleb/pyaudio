@@ -115,8 +115,8 @@ import sys
 try:
     import _portaudio as pa
 except ImportError:
-    print("Please build and install the PortAudio Python " +
-          "bindings first.")
+    print(("Please build and install the PortAudio Python " +
+          "bindings first."))
     sys.exit(-1)
 
 ############################################################

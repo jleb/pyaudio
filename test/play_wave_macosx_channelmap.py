@@ -11,7 +11,7 @@ chunk = 1024
 PyAudio = pyaudio.PyAudio
 
 if len(sys.argv) < 2:
-    print("Plays a wave file.\n\nUsage: %s filename.wav" % sys.argv[0])
+    print(("Plays a wave file.\n\nUsage: %s filename.wav" % sys.argv[0]))
     sys.exit(-1)
 
 wf = wave.open(sys.argv[1], 'rb')
@@ -49,8 +49,8 @@ except AttributeError:
           "you're running on Mac OS X.")
     sys.exit(-1)
 
-print("Stream Info Flags:", stream_info.get_flags())
-print("Stream Info Channel Map:", stream_info.get_channel_map())
+print(("Stream Info Flags:", stream_info.get_flags()))
+print(("Stream Info Channel Map:", stream_info.get_channel_map()))
 
 # open stream
 stream = p.open(

@@ -17,17 +17,17 @@ max_apis = p.get_host_api_count()
 max_devs = p.get_device_count()
 
 print("\nPortAudio System Info:\n======================")
-print("Version: %d" % pyaudio.get_portaudio_version())
-print("Version Text: %s" % pyaudio.get_portaudio_version_text())
-print("Number of Host APIs: %d" % max_apis)
-print("Number of Devices  : %d" % max_devs)
+print(("Version: %d" % pyaudio.get_portaudio_version()))
+print(("Version Text: %s" % pyaudio.get_portaudio_version_text()))
+print(("Number of Host APIs: %d" % max_apis))
+print(("Number of Devices  : %d" % max_devs))
 
 print("\nHost APIs:\n==========")
 
 for i in range(max_apis):
     apiinfo = p.get_host_api_info_by_index(i)
     for k in list(apiinfo.items()):
-        print("%s: %s" % k)
+        print(("%s: %s" % k))
     print("--------------------------")
 
 print("\nDevices:\n========")
@@ -46,7 +46,7 @@ for i in range(max_devs):
                     " (%s)" % p.get_host_api_info_by_index(k[1])['name']
 
         # Crashing?  See http://stackoverflow.com/a/5146914
-        print("\t%s: %s" % (name, value))
+        print(("\t%s: %s" % (name, value)))
 
     # print out supported format rates
 
@@ -94,41 +94,41 @@ for i in range(max_devs):
                 pass
 
     if len(input_supported_rates):
-        print("\tInput rates: %s" % input_supported_rates)
+        print(("\tInput rates: %s" % input_supported_rates))
     if len(output_supported_rates):
-        print("\tOutput rates: %s" % output_supported_rates)
+        print(("\tOutput rates: %s" % output_supported_rates))
     if len(full_duplex_rates):
-        print("\tFull duplex: %s" % full_duplex_rates)
+        print(("\tFull duplex: %s" % full_duplex_rates))
 
     print("\t--------------------------------")
 
 print("\nDefault Devices:\n================")
 try:
     def_index = p.get_default_input_device_info()['index']
-    print("Default Input Device : %s" % def_index)
+    print(("Default Input Device : %s" % def_index))
     devinfo = p.get_device_info_by_index(def_index)
     for k in list(devinfo.items()):
         name, value = k
         if name == 'hostApi':
             value = str(value) + \
                     " (%s)" % p.get_host_api_info_by_index(k[1])['name']
-        print("\t%s: %s" % (name, value))
+        print(("\t%s: %s" % (name, value)))
     print("\t--------------------------------")
 except IOError as e:
-    print("No Input devices: %s" % e[0])
+    print(("No Input devices: %s" % e[0]))
 
 try:
     def_index = p.get_default_output_device_info()['index']
-    print("Default Output Device: %s" % def_index)
+    print(("Default Output Device: %s" % def_index))
     devinfo = p.get_device_info_by_index(def_index)
     for k in list(devinfo.items()):
         name, value = k
         if name == 'hostApi':
             value = str(value) + \
                     " (%s)" % p.get_host_api_info_by_index(k[1])['name']
-        print("\t%s: %s" % (name, value))
+        print(("\t%s: %s" % (name, value)))
     print("\t--------------------------------")
 except IOError as e:
-    print("No Output devices: %s" % e[0])
+    print(("No Output devices: %s" % e[0]))
 
 p.terminate()

@@ -75,7 +75,12 @@ elif sys.platform == 'win32':
 
 if not STATIC_LINKING:
     external_libraries = ['portaudio']
-    extra_link_args = []
+
+    # https://stackoverflow.com/questions/22954119/linker-error-while-linking-some-windows-apis
+    # https://docs.microsoft.com/en-us/cpp/error-messages/tool-errors/linker-tools-warning-lnk4098?view=vs-2019
+    if sys.platform.startswith('win32'):
+        extra_link_args = ['/VERBOSE:LIB', '/NODEFAULTLIB:libcmt.lib', '/DEFAULTLIB:advapi32.lib']
+
 else:
     include_dirs = [os.path.join(portaudio_path, 'include/')]
     extra_link_args = [

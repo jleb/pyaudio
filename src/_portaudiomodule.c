@@ -36,12 +36,7 @@
 #define DEFAULT_FRAMES_PER_BUFFER 1024
 /* #define VERBOSE */
 
-#define min(a, b)           \
-  ({                        \
-    __typeof__(a) _a = (a); \
-    __typeof__(b) _b = (b); \
-    _a < _b ? _a : _b;      \
-  })
+#define ADDRESS_MIN(a, b) ((a) < (b) ? (a) : (b))
 
 /************************************************************
  *
@@ -1364,7 +1359,7 @@ int _stream_callback_cfunction(const void *input, void *output,
   // Copy bytes for playback only if this is an output stream:
   if (output) {
     char *output_data = (char *)output;
-    memcpy(output_data, pData, min(output_len, bytes_per_frame * frameCount));
+    memcpy(output_data, pData, ADDRESS_MIN(output_len, bytes_per_frame * frameCount));
     // Pad out the rest of the buffer with 0s if callback returned
     // too few frames (and assume paComplete).
     if (output_len < (frameCount * bytes_per_frame)) {

@@ -78,7 +78,7 @@ if not STATIC_LINKING:
 
     # https://stackoverflow.com/questions/22954119/linker-error-while-linking-some-windows-apis
     # https://docs.microsoft.com/en-us/cpp/error-messages/tool-errors/linker-tools-warning-lnk4098?view=vs-2019
-    if sys.platform.startswith('win32'):
+    if sys.platform.startswith('win'):
         extra_link_args = ['/VERBOSE:LIB', '/NODEFAULTLIB:libcmt.lib', '/DEFAULTLIB:advapi32.lib']
 
 else:

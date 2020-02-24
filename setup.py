@@ -74,6 +74,7 @@ elif sys.platform == 'win32':
         defines.append(('MS_WIN64', '1'))
 
 if not STATIC_LINKING:
+    extra_link_args = []
     external_libraries = ['portaudio']
 
     # https://stackoverflow.com/questions/22954119/linker-error-while-linking-some-windows-apis

@@ -29,10 +29,14 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 import os
 import platform
 import sys
+
 try:
     from setuptools import setup, Extension
+    from setuptools.command.build_ext import build_ext
+
 except ImportError:
     from distutils.core import setup, Extension
+    from distutils.command.build_ext import build_ext
 
 __version__ = "0.2.11"
 
@@ -77,11 +81,6 @@ if not STATIC_LINKING:
     extra_link_args = []
     external_libraries = ['portaudio']
 
-    # https://stackoverflow.com/questions/22954119/linker-error-while-linking-some-windows-apis
-    # https://docs.microsoft.com/en-us/cpp/error-messages/tool-errors/linker-tools-warning-lnk4098?view=vs-2019
-    if sys.platform.startswith('win'):
-        extra_link_args = ['/VERBOSE:LIB', '/NODEFAULTLIB:libcmt.lib', '/DEFAULTLIB:advapi32.lib']
-
 else:
     include_dirs = [os.path.join(portaudio_path, 'include/')]
     extra_link_args = [
@@ -109,6 +108,45 @@ else:
         # JACK, since that's common today.
         extra_link_args += ['-lasound', '-ljack']
 
+
+myextension = Extension(
+    '_portaudio',
+    sources=pyaudio_module_sources,
+    include_dirs=include_dirs,
+    define_macros=defines,
+    libraries=external_libraries,
+    extra_compile_args=extra_compile_args,
+    extra_link_args=extra_link_args
+)
+
+class build_ext_compiler_check(build_ext):
+    def build_extensions(self):
+        compiler = self.compiler.compiler_type
+
+        # print('\n\ncompiler', compiler, 'debug_variable_value', debug_variable_value)
+        for extension in self.extensions:
+
+            # https://stackoverflow.com/questions/22954119/linker-error-while-linking-some-windows-apis
+            # https://docs.microsoft.com/en-us/cpp/error-messages/tool-errors/linker-tools-warning-lnk4098?view=vs-2019
+            if extension == myextension:
+
+                if 'msvc' in compiler:
+                    # extension.extra_link_args.append('/VERBOSE:LIB')
+                    extension.extra_link_args.append('/NODEFAULTLIB:libcmt.lib')
+                    extension.extra_link_args.append('/DEFAULTLIB:advapi32.lib')
+
+                # else:
+                    # extension.extra_compile_args.append( '-ggdb' )
+                    # extension.extra_link_args.append( '-std=c++11' )
+                    # extension.libraries.append( 'hs' )
+                    # extension.include_dirs.append( '/usr/include/hs' )
+
+        super().build_extensions()
+
+cmdclass = {}
+cmdclass['build_ext'] = build_ext_compiler_check
+
+
 setup(name='PyAudio',
       version=__version__,
       author="Hubert Pham",
@@ -116,14 +154,8 @@ setup(name='PyAudio',
       description='PortAudio Python Bindings',
       long_description=__doc__.lstrip(),
       scripts=scripts,
+      cmdclass=cmdclass,
       py_modules=['pyaudio'],
       package_dir={'': 'src'},
-      ext_modules=[
-    Extension('_portaudio',
-              sources=pyaudio_module_sources,
-              include_dirs=include_dirs,
-              define_macros=defines,
-              libraries=external_libraries,
-              extra_compile_args=extra_compile_args,
-              extra_link_args=extra_link_args)
-    ])
+      ext_modules=[myextension]
+    )

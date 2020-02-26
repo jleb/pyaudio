@@ -1,6 +1,6 @@
 # PyAudio : Python Bindings for PortAudio.
 
-# Copyright (c) 2006-2012 Hubert Pham
+# Copyright (c) 2006 Hubert Pham
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -106,7 +106,7 @@ Overview
 """
 
 __author__ = "Hubert Pham"
-__version__ = "0.2.8.1"
+__version__ = "0.2.11"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -115,9 +115,8 @@ import sys
 try:
     import _portaudio as pa
 except ImportError:
-    print("Please build and install the PortAudio Python " +
-          "bindings first.")
-    sys.exit(-1)
+    print("Could not import the PyAudio C module '_portaudio'.")
+    raise
 
 ############################################################
 # GLOBALS
@@ -472,7 +471,7 @@ class Stream:
 
     def get_output_latency(self):
         """
-        Return the input latency.
+        Return the output latency.
 
         :rtype: float
         """
@@ -562,7 +561,7 @@ class Stream:
            Defaults to None, in which this value will be
            automatically computed.
         :param exception_on_underflow:
-           Specifies whether an exception should be thrown
+           Specifies whether an IOError exception should be thrown
            (or silently ignored) on buffer underflow. Defaults
            to False for improved performance, especially on
            slower platforms.
@@ -587,20 +586,18 @@ class Stream:
                         exception_on_underflow)
 
 
-    def read(self, num_frames, should_warn=False):
+    def read(self, num_frames, exception_on_overflow=True):
         """
         Read samples from the stream.  Do not call when using
         *non-blocking* mode.
 
-        :param num_frames:
-           The number of frames to read.
-        :param should_warn:
-           Specifies whether a warning should be written to stderr (or silently
-           ignored) on buffer overflow. Defaults to False.
-
+        :param num_frames: The number of frames to read.
+        :param exception_on_overflow:
+           Specifies whether an IOError exception should be thrown
+           (or silently ignored) on input buffer overflow. Defaults
+           to True.
         :raises IOError: if stream is not an input stream
           or if the read operation was unsuccessful.
-
         :rtype: string
         """
 
@@ -608,7 +605,7 @@ class Stream:
             raise IOError("Not input stream",
                           paCanNotReadFromAnOutputOnlyStream)
 
-        return pa.read_stream(self._stream, num_frames, should_warn)
+        return pa.read_stream(self._stream, num_frames, exception_on_overflow)
 
     def get_read_available(self):
         """

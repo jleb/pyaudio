@@ -8,81 +8,83 @@ platforms:
     * General UNIX Guide: (GNU/Linux, Mac OS X, Cygwin)
     * Microsoft Windows (native)
 
-Generally speaking, you must first install the PortAudio v19 library
-before building PyAudio.
-
+Generally speaking, installation involves building the PortAudio v19
+library and then building PyAudio.
 
 ----------------------------------------------------------------------
 General UNIX Guide (GNU/Linux, Mac OS X, Cygwin)
 ----------------------------------------------------------------------
 
-1. Build and install PortAudio, i.e.:
+1. Use a package manager to install PortAudio v19.
+
+   To build PortAudio from source instead, extract the source and run:
 
    % ./configure
    % make
    % make install # you may need to be root
 
-   (Or better yet, use your package manager to install PortAudio v19)
-
-2. Extract PyAudio; to build and install, run:
+2. Extract PyAudio.  To build and install, run:
 
    % python setup.py install
-
 
 ----------------------------------------------------------------------
 Microsoft Windows
 ----------------------------------------------------------------------
 
-If you are targeting native Win32 Python, you will need either
-Microsoft Visual Studio or MinGW (via Cygwin). Here are compilation
-hints for using MinGW under the Cygwin build environment.
+Targeting native Win32 Python will require either Microsoft Visual
+Studio or MinGW (via Cygwin).  Here are compilation hints for using
+MinGW under the Cygwin build environment.
 
 Note: I've only tested this under Cygwin's build environment. Your
 mileage may vary in other environments (i.e., compiling PortAudio with
-MinGW's compiler and environment).
+MinGW's compiler).
 
-(If you have instructions for building PyAudio using Visual Studio,
-I'd love to hear about it.)
+1. Install cygwin's gcc and mingw packages.
 
-1. Download PortAudio to ./portaudio-v19 in this directory
-   and build. When running configure, be sure to use ``-mno-cygwin``
-   (under cygwin) to generate native Win32 binaries:
+2. Download PortAudio and build.  When running configure, be sure to
+   specify the MinGW compiler (via a CC environment variable) to
+   generate native Win32 binaries:
 
-     % cd ./portaudio-v19
-     % CFLAGS="-mno-cygwin" LDFLAGS="-mno-cygwin" ./configure
-     % make
-     % cd ..
+      % CC=i686-w64-mingw32-gcc ./configure --enable-static --with-pic
+      % make
 
-2. To build PyAudio, run (from this directory):
+3. Before building PyAudio, apply a few necessary modifications:
 
-     % python setup.py build --static-link -cmingw32
+   a. Python distutils calls ``gcc'' to build the C extension, so
+      temporarily move your MinGW compiler to /usr/bin/gcc.
+
+   b. Modify Python's Lib/distutils/cygwincompiler.py so that
+      mscvr900.dll is not included in the build.  See:
+      http://bugs.python.org/issue16472.
+
+      Both Python 2.7 and Python 3+ require similar modification.
+
+   c. For some versions of Python (e.g., Python 2.7 32-bit), it is
+      necessary to further modify Python's
+      Lib/distutils/cygwincompiler.py and remove references to
+      -cmingw32, a flag which is no longer supported.
+      See http://hg.python.org/cpython/rev/6b89176f1be5/.
+
+   d. For some versions of 64-bit Python 3 (e.g., Python 3.2, 3.3, 3.4),
+      it is necessary to generate .a archive of the Python DLL.
+      See https://bugs.python.org/issue20785. Example for Python 3.4:
+
+      % cd /path/to/Python34-x64/libs/
+      % gendef /path/to/Windows/System32/python34.dll
+      % dlltool --as-flags=--64 -m i386:x64-64 -k --output-lib libpython34.a \
+          --input-def python34.def
+
+4. To build PyAudio, run:
+
+      % PORTAUDIO_PATH=/path/to/portaudio_tree /path/to/win/python \
+            setup.py build --static-link -cmingw32
 
    Be sure to invoke the native Win32 python rather than cygwin's
    python.  The --static-link option statically links in the PortAudio
-   library to the PyAudio module, which is probably the best way to go
-   on Windows.
+   library to the PyAudio module.
 
-   From: http://boodebr.org/main/python/build-windows-extensions
+5. To install PyAudio:
 
-     Update: 2008-09-10
+      % python setup.py install --skip-build
 
-     Recent versions of Cygwin binutils have version numbers that are
-     breaking the version number parsing, resulting in errors like:
-     ValueError: invalid version number '2.18.50.20080625'
-
-     To fix this, edit distutils/version.py. At line 100, replace:
-
-       version_re = re.compile(r'^(\d+) \. (\d+) (\. (\d+))? ([ab](\d+))?$',
-                               re.VERBOSE)
-
-     with
-
-       version_re = re.compile(r'^(\d+) \. (\d+) (\. (\d+))? (\. (\d+))?$',
-                               re.VERBOSE)
-
-3. To install PyAudio:
-
-     % python setup.py install --skip-build
-
-   The --skip-build option prevents Python from searching your system
-   for Visual Studio and the .NET framework.
+   Or create a Python wheel and install using pip.

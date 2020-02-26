@@ -1,0 +1,11 @@
+{
+	"folders":
+	[
+		{
+			"path": "../portaudio"
+		},
+		{
+			"path": "."
+		}
+	]
+}

@@ -1,5 +1,5 @@
 ======================================================================
-PyAudio v0.2.8: Python Bindings for PortAudio.
+PyAudio v0.2.11: Python Bindings for PortAudio.
 ======================================================================
 
 See: http://people.csail.mit.edu/hubert/pyaudio/
@@ -8,13 +8,24 @@ PyAudio provides Python bindings for PortAudio v19, the cross-platform
 audio I/O library. Using PyAudio, you can easily use Python to play
 and record audio on a variety of platforms.
 
-See INSTALL for compilation hints.
+## Installation (Visual Studio)
+
+1. Download and install Visual Studio 2017 or superior and:
+1. `git clone https://github.com/evandroforks/portaudio`
+1. Open the file `portaudio\build\msvc\portaudio.sln` with Visual Studio
+1. Select the Solution Configuration as `Release` and the Solution Platforms as `x64` on the top toolbar
+1. Go to the menu `Build -> Build Solution`
+1. Copy the file `portaudio\build\msvc\x64\Release\portaudio.lib` to `C:\Python\libs\` (Or whatever your Windows Python is installed)
+1. Run the command: `python -m pip install git+https://github.com/evandroforks/pyaudio`
+1. Or just clone this repository and run `cd pyaudio && python -m pip install .`
+
+See INSTALL for other compilation hints.
 
 ======================================================================
 
 PyAudio : Python Bindings for PortAudio.
 
-Copyright (c) 2006-2014 Hubert Pham
+Copyright (c) 2006 Hubert Pham
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -36,4 +47,3 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ======================================================================
-

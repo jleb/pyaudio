@@ -910,7 +910,8 @@ static PyTypeObject _pyAudio_MacOSX_hostApiSpecificStreamInfoType = {
 typedef struct {
   PyObject *callback;
   long main_thread_id;
-  unsigned int frame_size;
+  unsigned int input_frame_size;
+  unsigned int output_frame_size;
 } PyAudioCallbackContext;
 
 typedef struct {
@@ -1521,7 +1522,8 @@ _stream_callback_cfunction(const void *input,
 
   PyAudioCallbackContext *context = (PyAudioCallbackContext *)userData;
   PyObject *py_callback = context->callback;
-  unsigned int bytes_per_frame = context->frame_size;
+  int input_frame_size = context->input_frame_size;
+  int output_frame_size = context->output_frame_size;
   long main_thread_id = context->main_thread_id;
 
   PyObject *py_frame_count = PyLong_FromUnsignedLong(frameCount);
@@ -1540,7 +1542,7 @@ _stream_callback_cfunction(const void *input,
 
   if (input) {
     py_input_data = PyBytes_FromStringAndSize(input,
-                                              bytes_per_frame * frameCount);
+                                              input_frame_size * frameCount);
   }
 
   py_result = PyObject_CallFunctionObjArgs(py_callback,
@@ -1616,14 +1618,14 @@ _stream_callback_cfunction(const void *input,
 
   if (output) {
       char *output_data = (char*)output;
-      memcpy(output_data, pData, min(output_len, bytes_per_frame * frameCount));
+      memcpy(output_data, pData, min(output_len, output_frame_size * (int)frameCount));
 
       // Pad out the rest of the buffer with 0s if callback returned
       // too few frames (and assume paComplete).
-      if (output_len < (frameCount * bytes_per_frame)) {
+      if (output_len < ((int)frameCount * output_frame_size)) {
           memset(output_data + output_len,
                  0,
-                 (frameCount * bytes_per_frame) - output_len);
+                 (frameCount * output_frame_size) - output_len);
           return_val = paComplete;
       }
   }
@@ -1647,7 +1649,7 @@ _stream_callback_cfunction(const void *input,
 static PyObject *
 pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  int rate, channels;
+  int rate, channels, input_channels;
   int input, output, frames_per_buffer;
   int input_device_index = -1;
   int output_device_index = -1;
@@ -1677,6 +1679,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 			   "input_host_api_specific_stream_info",
 			   "output_host_api_specific_stream_info",
 			   "stream_callback",
+         "input_channels",
 			   NULL};
 
 #ifdef MACOSX
@@ -1697,9 +1700,9 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs,
 #ifdef MACOSX
-				   "iik|iiOOiO!O!O",
+				   "iik|iiOOiO!O!Oi",
 #else
-				   "iik|iiOOiOOO",
+				   "iik|iiOOiOOOi",
 #endif
 				   kwlist,
 				   &rate, &channels, &format,
@@ -1715,7 +1718,8 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
 				   &_pyAudio_MacOSX_hostApiSpecificStreamInfoType,
 #endif
 				   &outputHostSpecificStreamInfo,
-                                   &stream_callback))
+           &stream_callback,
+           &input_channels))
 
     return NULL;
 
@@ -1786,7 +1790,13 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 
-  if (channels < 1) {
+  int output_channels = channels;
+
+  if (input_channels == 0) { 
+    input_channels = channels;
+  }
+
+  if (input_channels == 0 && output_channels == 0) {
     PyErr_SetString(PyExc_ValueError, "Invalid audio channels");
     return NULL;
   }
@@ -1814,7 +1824,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
 
-    outputParameters->channelCount = channels;
+    outputParameters->channelCount = output_channels;
     outputParameters->sampleFormat = format;
     outputParameters->suggestedLatency =
       Pa_GetDeviceInfo(outputParameters->device)->defaultLowOutputLatency;
@@ -1851,7 +1861,7 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
 
-    inputParameters->channelCount = channels;
+    inputParameters->channelCount = input_channels;
     inputParameters->sampleFormat = format;
     inputParameters->suggestedLatency =
       Pa_GetDeviceInfo(inputParameters->device)->defaultLowInputLatency;
@@ -1872,7 +1882,8 @@ pa_open(PyObject *self, PyObject *args, PyObject *kwargs)
     context = (PyAudioCallbackContext *) malloc(sizeof(PyAudioCallbackContext));
     context->callback = (PyObject *) stream_callback;
     context->main_thread_id = PyThreadState_Get()->thread_id;
-    context->frame_size = Pa_GetSampleSize(format) * channels;
+    context->input_frame_size = Pa_GetSampleSize(format) * input_channels;
+    context->output_frame_size = Pa_GetSampleSize(format) * output_channels;
   }
 
   err = Pa_OpenStream(&stream,
